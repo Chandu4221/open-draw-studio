@@ -1,8 +1,21 @@
 import type { BoundingBox, PluginId, Shape, ShapeSvgRenderer } from "@open-draw/canvas";
-import { parsePluginId, SHAPE_KINDS } from "@open-draw/canvas";
+import { FILL_STYLES, parsePluginId, SHAPE_KINDS } from "@open-draw/canvas";
+import { buildScopedTextStyle, WIREFRAME_PALETTE } from "./wireframe-typography";
+
+export {
+  PLUGIN_TYPOGRAPHY,
+  TYPOGRAPHY_VARIANTS,
+  type TypographyVariant,
+  type TypographySpec,
+  TYPOGRAPHY_SPECS,
+  WIREFRAME_PALETTE,
+  computeAutoContrastText,
+  resolveShapeTypographyVariant,
+  resolveShapeTypography,
+  buildScopedTextStyle,
+} from "./wireframe-typography";
 
 export const PLUGIN_BORDER_RADIUS: PluginId = parsePluginId("open-draw:border-radius");
-export const PLUGIN_TYPOGRAPHY: PluginId = parsePluginId("open-draw:typography");
 
 export const CORNER_RADII = {
   none: 0,
@@ -25,48 +38,6 @@ export interface CornerRadii {
 
 export type ShapeBorderRadius = number | "pill" | CornerRadii;
 
-export const TYPOGRAPHY_VARIANTS = {
-  display: "display",
-  h1: "h1",
-  h2: "h2",
-  h3: "h3",
-  body: "body",
-  caption: "caption",
-  button: "button",
-} as const;
-
-export type TypographyVariant = (typeof TYPOGRAPHY_VARIANTS)[keyof typeof TYPOGRAPHY_VARIANTS];
-
-export interface TypographySpec {
-  readonly fontSize: number;
-  readonly fontWeight: number;
-  readonly letterSpacing?: string;
-  readonly lineHeight?: number;
-}
-
-export const TYPOGRAPHY_SPECS: Readonly<Record<TypographyVariant, TypographySpec>> = Object.freeze({
-  [TYPOGRAPHY_VARIANTS.display]: { fontSize: 28, fontWeight: 700, letterSpacing: "-0.02em" },
-  [TYPOGRAPHY_VARIANTS.h1]: { fontSize: 22, fontWeight: 700, letterSpacing: "-0.01em" },
-  [TYPOGRAPHY_VARIANTS.h2]: { fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em" },
-  [TYPOGRAPHY_VARIANTS.h3]: { fontSize: 15, fontWeight: 600 },
-  [TYPOGRAPHY_VARIANTS.body]: { fontSize: 14, fontWeight: 400 },
-  [TYPOGRAPHY_VARIANTS.caption]: { fontSize: 12, fontWeight: 500 },
-  [TYPOGRAPHY_VARIANTS.button]: { fontSize: 14, fontWeight: 600 },
-});
-
-export const WIREFRAME_PALETTE = {
-  textPrimary: "#0f172a",
-  textSecondary: "#64748b",
-  textOnDark: "#ffffff",
-  borderSubtle: "#e2e8f0",
-  borderDefault: "#cbd5e1",
-  borderDark: "#0f172a",
-  surfaceCard: "#ffffff",
-  surfaceInput: "#f8fafc",
-  surfaceButtonDark: "#0f172a",
-  surfaceButtonLight: "#f1f5f9",
-} as const;
-
 function escapeXml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -78,32 +49,6 @@ function escapeXml(str: string): string {
 
 function num(val: number | undefined | null, fallback = 0): number {
   return typeof val === "number" && Number.isFinite(val) ? val : fallback;
-}
-
-/**
- * Calculates whether text on a given background fill should be white or dark (WCAG 2.1 relative luminance).
- */
-export function computeAutoContrastText(fill: string | undefined | null): string {
-  if (!fill || fill === "none" || fill === "transparent") return WIREFRAME_PALETTE.textPrimary;
-  const hex = fill.trim().toLowerCase();
-  if (!hex.startsWith("#")) return WIREFRAME_PALETTE.textPrimary;
-  let r = 0,
-    g = 0,
-    b = 0;
-  if (hex.length === 4) {
-    const h1 = hex.charAt(1),
-      h2 = hex.charAt(2),
-      h3 = hex.charAt(3);
-    r = parseInt(h1 + h1, 16);
-    g = parseInt(h2 + h2, 16);
-    b = parseInt(h3 + h3, 16);
-  } else if (hex.length === 7) {
-    r = parseInt(hex.substring(1, 3), 16);
-    g = parseInt(hex.substring(3, 5), 16);
-    b = parseInt(hex.substring(5, 7), 16);
-  }
-  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return lum < 140 ? WIREFRAME_PALETTE.textOnDark : WIREFRAME_PALETTE.textPrimary;
 }
 
 /**
@@ -221,57 +166,39 @@ export function generateRoundedRectPath(
   return `${p1} ${a1} ${p2} ${a2} ${p3} ${a3} ${p4} ${a4} Z`;
 }
 
-/**
- * Resolves typography specifications (font-size, font-weight) for a text or labeled shape.
- */
-export function resolveShapeTypography(shape: Shape): TypographySpec {
-  const metaTypo =
-    (shape.meta.pluginData?.[PLUGIN_TYPOGRAPHY] as TypographyVariant | undefined | null) ??
-    (shape.meta.typography as TypographyVariant | undefined);
-  if (metaTypo && metaTypo in TYPOGRAPHY_SPECS) {
-    return TYPOGRAPHY_SPECS[metaTypo];
+export function resolveWireframeFill(shape: Shape): {
+  fill: string;
+  fillOpacity?: number | undefined;
+  defs?: string | undefined;
+} {
+  const fillStyle = shape.fillStyle;
+  if (fillStyle === FILL_STYLES.none) {
+    return { fill: "none" };
   }
-
-  // Derive from semantic tag properties or tag ID
-  const semantic = shape.meta.semantic as
-    { id?: string; properties?: Record<string, unknown> } | undefined;
-  const tagId = semantic?.id;
-  const level = semantic?.properties?.level;
-
-  if (tagId === "heading" || tagId === "header") {
-    if (level === 1) return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.h1];
-    if (level === 2) return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.h2];
-    if (level === 3) return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.h3];
-    return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.h1];
+  if (fillStyle === FILL_STYLES.subtle) {
+    const tintColor =
+      shape.fill && shape.fill !== "none" && shape.fill !== "transparent"
+        ? shape.fill
+        : shape.stroke && shape.stroke !== "none"
+          ? shape.stroke
+          : WIREFRAME_PALETTE.borderDark;
+    return { fill: escapeXml(tintColor), fillOpacity: 0.1 };
   }
-  if (tagId === "button") {
-    return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.button];
+  if (fillStyle === FILL_STYLES.hatch) {
+    const patternId = `od-pattern-hatch-${escapeXml(shape.id)}`;
+    const strokeColor = escapeXml(
+      shape.stroke && shape.stroke !== "none" ? shape.stroke : WIREFRAME_PALETTE.borderDark,
+    );
+    const defs = `<defs><pattern id="${patternId}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45 0 0)"><line x1="0" y1="0" x2="0" y2="10" stroke="${strokeColor}" stroke-width="1.5" /></pattern></defs>`;
+    return { fill: `url(#${patternId})`, defs };
   }
-  if (tagId === "caption" || tagId === "badge" || tagId === "chip") {
-    return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.caption];
+  if (fillStyle === FILL_STYLES.solid) {
+    return { fill: escapeXml(shape.fill ?? WIREFRAME_PALETTE.surfaceCard) };
   }
-
-  return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.body];
-}
-
-function buildScopedTextStyle(shape: Shape): string {
-  const autoTextColor = computeAutoContrastText(shape.fill);
-  const typo = resolveShapeTypography(shape);
-  const safeId = escapeXml(shape.id);
-
-  const styleRules = [
-    `font-family: var(--od-font, system-ui, -apple-system, sans-serif) !important;`,
-    `font-size: ${typo.fontSize}px !important;`,
-    `font-weight: ${typo.fontWeight} !important;`,
-  ];
-  if (autoTextColor === WIREFRAME_PALETTE.textOnDark) {
-    styleRules.push(`fill: ${WIREFRAME_PALETTE.textOnDark} !important;`);
+  if (shape.fill !== undefined) {
+    return { fill: escapeXml(shape.fill) };
   }
-  if (typo.letterSpacing) {
-    styleRules.push(`letter-spacing: ${typo.letterSpacing} !important;`);
-  }
-
-  return `<style>[data-shape-id="${safeId}"] text { ${styleRules.join(" ")} }</style>`;
+  return { fill: "none" };
 }
 
 function renderRectSvg(
@@ -280,16 +207,20 @@ function renderRectSvg(
   fill: string,
   stroke?: string,
   strokeWidth?: number,
+  fillOpacity?: number,
+  defs?: string,
 ): string {
   const isUniform = radii.tl === radii.tr && radii.tr === radii.br && radii.br === radii.bl;
   const strokeAttr = stroke ? ` stroke="${escapeXml(stroke)}"` : "";
   const swAttr = strokeWidth ? ` stroke-width="${strokeWidth}"` : "";
+  const fillOpacityAttr = fillOpacity !== undefined ? ` fill-opacity="${fillOpacity}"` : "";
+  const defsTag = defs ?? "";
 
   if (isUniform) {
     const radius = radii.tl;
     const formattedRadius = Number.isInteger(radius) ? radius.toString() : radius.toFixed(1);
     const radiusAttr = radius > 0 ? ` rx="${formattedRadius}" ry="${formattedRadius}"` : "";
-    return `<rect x="${num(box.x)}" y="${num(box.y)}" width="${num(box.width, 1)}" height="${num(box.height, 1)}"${radiusAttr} fill="${fill}"${strokeAttr}${swAttr} />`;
+    return `${defsTag}<rect x="${num(box.x)}" y="${num(box.y)}" width="${num(box.width, 1)}" height="${num(box.height, 1)}"${radiusAttr} fill="${fill}"${fillOpacityAttr}${strokeAttr}${swAttr} />`;
   }
 
   const pathD = generateRoundedRectPath(
@@ -299,7 +230,7 @@ function renderRectSvg(
     num(box.height, 1),
     radii,
   );
-  return `<path d="${pathD}" fill="${fill}"${strokeAttr}${swAttr} />`;
+  return `${defsTag}<path d="${pathD}" fill="${fill}"${fillOpacityAttr}${strokeAttr}${swAttr} />`;
 }
 
 /**
@@ -307,10 +238,10 @@ function renderRectSvg(
  */
 export function renderPolishedRect(shape: Shape, box: BoundingBox): string {
   const radii = resolveShapeCornerRadii(shape, box);
-  const fill = escapeXml(shape.fill ?? "none");
+  const { fill, fillOpacity, defs } = resolveWireframeFill(shape);
   const stroke = shape.stroke ?? WIREFRAME_PALETTE.borderDark;
-  const strokeWidth = num(shape.strokeWidth, 2);
-  return `${buildScopedTextStyle(shape)}${renderRectSvg(box, radii, fill, stroke, strokeWidth)}`;
+  const strokeWidth = num(shape.strokeWidth, 1);
+  return `${buildScopedTextStyle(shape)}${renderRectSvg(box, radii, fill, stroke, strokeWidth, fillOpacity, defs)}`;
 }
 
 /**
@@ -319,9 +250,9 @@ export function renderPolishedRect(shape: Shape, box: BoundingBox): string {
 export function renderPolishedText(shape: Shape, box: BoundingBox): string {
   const styleTag = buildScopedTextStyle(shape);
   if (shape.fill !== undefined && shape.fill !== "none" && shape.fill !== "transparent") {
-    const fill = escapeXml(shape.fill);
+    const { fill, fillOpacity, defs } = resolveWireframeFill(shape);
     const radii = resolveShapeCornerRadii(shape, box);
-    return `${styleTag}${renderRectSvg(box, radii, fill, shape.stroke, num(shape.strokeWidth, 2))}`;
+    return `${styleTag}${renderRectSvg(box, radii, fill, shape.stroke, num(shape.strokeWidth, 1), fillOpacity, defs)}`;
   }
   return styleTag;
 }

@@ -22,7 +22,7 @@ export const DEFAULT_SAMPLE_AI_DIRECTIVES: readonly string[] = [
   "  - Do not render untagged child shapes as raw unstyled containers — map them directly into the parent component's idiomatic slots and sub-elements.",
   "- **Theme Architecture (Single Light Mode)**:",
   "  - Implement a clean single Light theme mode.",
-  "- **Stack Guidance (Web)**: Implement as modular React components with TypeScript and Tailwind CSS. Ensure responsive layout behavior across device classes.",
+  "- **Stack Guidance (Web)**: Detect and adapt to the host project's environment (e.g. React, Vue, Svelte, Angular, plain HTML/CSS, Tailwind, CSS Modules) using package.json and project configuration. When no framework is detected, output clean, semantic HTML5 and CSS. Ensure responsive layout behavior across device classes.",
 ];
 
 /**
@@ -153,6 +153,25 @@ export function createDefaultSampleDocument(): Document {
       },
     },
     {
+      id: "s-7a14" as ShapeId,
+      kind: SHAPE_KINDS.text,
+      parentId: "s-7a11" as ShapeId,
+      boundingBox: {
+        x: 155.91,
+        y: 7.91,
+        width: 380.51,
+        height: 32,
+      },
+      content: "Design interfaces visually. Add meaning. Ship code",
+      meta: {
+        order: {},
+        semantic: { id: "heading", platform: "web" },
+        pluginData: {
+          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web" },
+        },
+      },
+    },
+    {
       id: "s-7a12" as ShapeId,
       kind: SHAPE_KINDS.text,
       parentId: "s-7a11" as ShapeId,
@@ -193,25 +212,6 @@ export function createDefaultSampleDocument(): Document {
       },
     },
     {
-      id: "s-7a14" as ShapeId,
-      kind: SHAPE_KINDS.text,
-      parentId: "s-7a11" as ShapeId,
-      boundingBox: {
-        x: 155.91,
-        y: 7.91,
-        width: 380.51,
-        height: 32,
-      },
-      content: "Design interfaces visually. Add meaning. Ship code",
-      meta: {
-        order: {},
-        semantic: { id: "heading", platform: "web" },
-        pluginData: {
-          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web" },
-        },
-      },
-    },
-    {
       id: "s-7a15" as ShapeId,
       kind: SHAPE_KINDS.rect,
       parentId: "s-7a07" as ShapeId,
@@ -243,9 +243,9 @@ export function createDefaultSampleDocument(): Document {
       content: "Same structure. Different design languages.",
       meta: {
         order: {},
-        semantic: { id: "heading", platform: "web", properties: { level: "3" } },
+        semantic: { id: "heading", platform: "web", properties: { level: "2" } },
         pluginData: {
-          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web", properties: { level: "3" } },
+          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web", properties: { level: "2" } },
         },
       },
     },
@@ -254,9 +254,9 @@ export function createDefaultSampleDocument(): Document {
       kind: SHAPE_KINDS.rect,
       parentId: "s-7a15" as ShapeId,
       boundingBox: {
-        x: 9.62,
+        x: 12,
         y: 86.5,
-        width: 133.25,
+        width: 124,
         height: 66.61,
       },
       label: "Design Style Card",
@@ -275,9 +275,9 @@ export function createDefaultSampleDocument(): Document {
       kind: SHAPE_KINDS.rect,
       parentId: "s-7a15" as ShapeId,
       boundingBox: {
-        x: 150.87,
+        x: 151,
         y: 86.5,
-        width: 133.25,
+        width: 124,
         height: 66.61,
       },
       label: "Design Style Card",
@@ -296,9 +296,9 @@ export function createDefaultSampleDocument(): Document {
       kind: SHAPE_KINDS.rect,
       parentId: "s-7a15" as ShapeId,
       boundingBox: {
-        x: 294.5,
+        x: 290,
         y: 86.5,
-        width: 133.25,
+        width: 124,
         height: 66.61,
       },
       label: "Design Style Card",
@@ -317,9 +317,9 @@ export function createDefaultSampleDocument(): Document {
       kind: SHAPE_KINDS.rect,
       parentId: "s-7a15" as ShapeId,
       boundingBox: {
-        x: 436.43,
+        x: 429,
         y: 86.5,
-        width: 133.25,
+        width: 124,
         height: 66.61,
       },
       label: "Design Style Card",
@@ -338,9 +338,9 @@ export function createDefaultSampleDocument(): Document {
       kind: SHAPE_KINDS.rect,
       parentId: "s-7a15" as ShapeId,
       boundingBox: {
-        x: 580.63,
+        x: 568,
         y: 86.5,
-        width: 96.14,
+        width: 124,
         height: 66.61,
       },
       label: "Design Style Card",
@@ -386,9 +386,9 @@ export function createDefaultSampleDocument(): Document {
       content: "More than shapes on a canvas.",
       meta: {
         order: {},
-        semantic: { id: "heading", platform: "web", properties: { level: "3" } },
+        semantic: { id: "heading", platform: "web", properties: { level: "2" } },
         pluginData: {
-          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web", properties: { level: "3" } },
+          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web", properties: { level: "2" } },
         },
       },
     },
@@ -424,9 +424,9 @@ export function createDefaultSampleDocument(): Document {
       content: "Draw on a real canvas",
       meta: {
         order: {},
-        semantic: { id: "header", platform: "web" },
+        semantic: { id: "heading", platform: "web", properties: { level: "4" } },
         pluginData: {
-          [PLUGIN_SEMANTICS]: { id: "header", platform: "web" },
+          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web", properties: { level: "4" } },
         },
       },
     },
@@ -477,9 +477,9 @@ export function createDefaultSampleDocument(): Document {
       content: "Tag components with meaning",
       meta: {
         order: {},
-        semantic: { id: "header", platform: "web" },
+        semantic: { id: "heading", platform: "web", properties: { level: "4" } },
         pluginData: {
-          [PLUGIN_SEMANTICS]: { id: "header", platform: "web" },
+          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web", properties: { level: "4" } },
         },
       },
     },
@@ -530,9 +530,9 @@ export function createDefaultSampleDocument(): Document {
       content: "Export structured markup",
       meta: {
         order: {},
-        semantic: { id: "header", platform: "web" },
+        semantic: { id: "heading", platform: "web", properties: { level: "4" } },
         pluginData: {
-          [PLUGIN_SEMANTICS]: { id: "header", platform: "web" },
+          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web", properties: { level: "4" } },
         },
       },
     },
@@ -583,9 +583,9 @@ export function createDefaultSampleDocument(): Document {
       content: "Swap styles without redrawing",
       meta: {
         order: {},
-        semantic: { id: "header", platform: "web" },
+        semantic: { id: "heading", platform: "web", properties: { level: "4" } },
         pluginData: {
-          [PLUGIN_SEMANTICS]: { id: "header", platform: "web" },
+          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web", properties: { level: "4" } },
         },
       },
     },
@@ -636,9 +636,9 @@ export function createDefaultSampleDocument(): Document {
       content: "Start drawing. Add meaning. Ship the interface.",
       meta: {
         order: {},
-        semantic: { id: "heading", platform: "web", properties: { level: "3" } },
+        semantic: { id: "heading", platform: "web", properties: { level: "2" } },
         pluginData: {
-          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web", properties: { level: "3" } },
+          [PLUGIN_SEMANTICS]: { id: "heading", platform: "web", properties: { level: "2" } },
         },
       },
     },

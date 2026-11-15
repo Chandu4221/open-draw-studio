@@ -73,4 +73,25 @@ describe("ContainerInspector options and semantic chips (R-016, R-031)", () => {
     expect(html).toContain('id="container-show-chips"');
     expect(html).toContain('aria-checked="false"');
   });
+
+  it("renders Style section with fill style controls for containers (R-016)", () => {
+    const html = renderToString(
+      <ContainerInspector
+        selectedShape={rootShape}
+        rootPlatform={undefined}
+        rootStyle={STYLE_PROFILES.minimal}
+        activeProfile={undefined}
+        handleSetLabel={vi.fn()}
+        handleSetPlatform={vi.fn()}
+        handleSetStyle={vi.fn()}
+        handleStyleChange={vi.fn()}
+        handleStylePreview={vi.fn()}
+        handleStyleCommit={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain('aria-label="Shape fill style"');
+    expect(html).toContain("Transparent (none)");
+    expect(html).toContain("Solid");
+  });
 });

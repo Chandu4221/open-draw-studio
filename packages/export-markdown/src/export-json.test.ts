@@ -9,6 +9,7 @@ import {
   createPenPath,
   createRect,
   parseDocument,
+  FILL_STYLES,
 } from "@open-draw/canvas";
 import { getShapeSemantic, SEMANTICS_REGISTRY_VERSION } from "@open-draw/semantics";
 import { formatChipId, isChipId, parseChipId } from "./chip-id";
@@ -270,6 +271,35 @@ describe("exportJson parity (Milestone 11A Work Package A)", () => {
         kind,
         { x: 10, y: 10, width: 100, height: 100 },
         { id: "overridden-id", validKey: "validValue" },
+        { parent: ROOT_ID },
+      ),
+    ]);
+
+    expect(() => exportJson(doc)).toThrow(DocumentError);
+  });
+
+  it("exports fillStyle on shapes carrying fillStyle (Option A)", () => {
+    const rectId = parseShapeId("rect-fill");
+    const shape = createRect(
+      rectId,
+      { x: 0, y: 0, width: 100, height: 100 },
+      { fillStyle: FILL_STYLES.hatch },
+    );
+    const doc = createDocument([shape]);
+
+    const exported = JSON.parse(exportJson(doc));
+    expect(exported.shapes["rect-fill"].fillStyle).toBe("hatch");
+  });
+
+  it("rejects customData attempting to override reserved fillStyle property", () => {
+    const customId = parseShapeId("custom-fill");
+    const kind = parseCustomShapeKind("vendor:fill-widget");
+    const doc = createDocument([
+      createCustomShape(
+        customId,
+        kind,
+        { x: 10, y: 10, width: 100, height: 100 },
+        { fillStyle: "custom-fill-style" },
         { parent: ROOT_ID },
       ),
     ]);

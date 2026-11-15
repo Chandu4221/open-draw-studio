@@ -4,8 +4,9 @@ import { OdField, OdIcon, OdSegmentedControl, type OdSegmentedItem } from "@open
 import {
   CORNER_RADII,
   PLUGIN_BORDER_RADIUS,
-  PLUGIN_TYPOGRAPHY,
   TYPOGRAPHY_VARIANTS,
+  resolveShapeCornerRadii,
+  resolveShapeTypographyVariant,
   type CornerRadii,
   type ShapeBorderRadius,
   type TypographyVariant,
@@ -33,6 +34,7 @@ const TYPOGRAPHY_ITEMS: readonly OdSegmentedItem<TypographyVariant>[] = [
   { id: TYPOGRAPHY_VARIANTS.h3, label: "H3" },
   { id: TYPOGRAPHY_VARIANTS.body, label: "Body" },
   { id: TYPOGRAPHY_VARIANTS.caption, label: "Caption" },
+  { id: TYPOGRAPHY_VARIANTS.button, label: "Button" },
 ];
 
 function parseCornerRadii(raw: unknown): CornerRadii {
@@ -176,7 +178,10 @@ export function ShapePolishControls(props: ShapePolishControlsProps): React.JSX.
     (selectedShape.meta.pluginData?.[PLUGIN_BORDER_RADIUS] as
       ShapeBorderRadius | undefined | null) ?? selectedShape.meta.borderRadius;
 
-  const radii = parseCornerRadii(rawRadius);
+  const radii =
+    rawRadius !== undefined && rawRadius !== null
+      ? parseCornerRadii(rawRadius)
+      : resolveShapeCornerRadii(selectedShape, selectedShape.boundingBox);
   const isUniform = radii.tl === radii.tr && radii.tr === radii.br && radii.br === radii.bl;
 
   const currentRadiusKey: RadiusKey =
@@ -207,10 +212,7 @@ export function ShapePolishControls(props: ShapePolishControlsProps): React.JSX.
     }
   };
 
-  const currentTypo =
-    (selectedShape.meta.pluginData?.[PLUGIN_TYPOGRAPHY] as TypographyVariant | undefined | null) ??
-    (selectedShape.meta.typography as TypographyVariant | undefined) ??
-    TYPOGRAPHY_VARIANTS.body;
+  const currentTypo = resolveShapeTypographyVariant(selectedShape);
 
   const isRect = selectedShape.kind === SHAPE_KINDS.rect;
   const isTextOrLabeled =

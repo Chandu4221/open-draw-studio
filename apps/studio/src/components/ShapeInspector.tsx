@@ -1,5 +1,11 @@
 import React, { useEffect, useRef } from "react";
-import { SHAPE_KINDS, type BoundingBox, type DeviceType, type Shape } from "@open-draw/canvas";
+import {
+  SHAPE_KINDS,
+  type BoundingBox,
+  type DeviceType,
+  type FillStyle,
+  type Shape,
+} from "@open-draw/canvas";
 import type { PlatformProfile } from "@open-draw/profiles";
 import type { SemanticConflict, SemanticDefinition } from "@open-draw/semantics";
 import { resolveShapeDisplayName } from "@open-draw/semantics";
@@ -33,11 +39,13 @@ export interface ShapeInspectorProps {
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly handleStylePreview: (
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly handleStyleCommit: (
     fill?: string | null,
@@ -47,7 +55,9 @@ export interface ShapeInspectorProps {
       fill?: string | null;
       stroke?: string | null;
       strokeWidth?: number | null;
+      fillStyle?: FillStyle | null;
     },
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly handleSetBoundingBox?: ((box: BoundingBox) => void) | undefined;
   readonly handleBorderRadiusChange?: ((radius: ShapeBorderRadius | null) => void) | undefined;

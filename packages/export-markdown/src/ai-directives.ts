@@ -175,7 +175,7 @@ export function compileAiDirectives(doc: Document, options?: MarkdownExportOptio
 
   if (platforms.has("web") || platforms.has(PLATFORMS.web)) {
     lines.push(
-      "- **Stack Guidance (Web)**: Implement as modular React components with TypeScript and Tailwind CSS. Ensure responsive layout behavior across device classes.",
+      "- **Stack Guidance (Web)**: Detect and adapt to the host project's environment (e.g. React, Vue, Svelte, Angular, plain HTML/CSS, Tailwind, CSS Modules) using package.json and project configuration. When no framework is detected, output clean, semantic HTML5 and CSS. Ensure responsive layout behavior across device classes.",
     );
   }
   if (platforms.has("androidNative") || platforms.has(PLATFORMS.androidNative)) {

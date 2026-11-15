@@ -1,5 +1,4 @@
-import React from "react";
-import type { BoundingBox, Shape, ShapeId } from "@open-draw/canvas";
+import type { BoundingBox, FillStyle, Shape, ShapeId } from "@open-draw/canvas";
 import {
   PLATFORM_BY_VALUE,
   PLATFORMS,
@@ -21,7 +20,10 @@ import { OdCard, OdField, OdSegmentedControl } from "@open-draw/ui";
 import { ComponentSemanticSection } from "./ComponentSemanticSection";
 import { DesignStyleSelect } from "./DesignStyleSelect";
 import { GeometrySection } from "./GeometrySection";
+import { ShapePolishControls } from "./ShapePolishControls";
+import { ShapeStyleInspector, type StyleChangeHandler } from "./ShapeStyleInspector";
 import { ThemePaletteSection } from "./ThemePaletteSection";
+import type { ShapeBorderRadius, TypographyVariant } from "../renderers/wireframe-renderers";
 
 export interface ContainerInspectorProps {
   readonly selectedShape: Shape;
@@ -43,16 +45,8 @@ export interface ContainerInspectorProps {
   readonly handleSetRole?: ((role: RootRole | "") => void) | undefined;
   readonly handleSetSemantic?: (semanticIdStr: string) => void;
   readonly handlePropertyChange?: (propId: string, val: string | number | boolean) => void;
-  readonly handleStyleChange?: (
-    fill?: string | null,
-    stroke?: string | null,
-    strokeWidth?: number | null,
-  ) => void;
-  readonly handleStylePreview?: (
-    fill?: string | null,
-    stroke?: string | null,
-    strokeWidth?: number | null,
-  ) => void;
+  readonly handleStyleChange?: StyleChangeHandler | undefined;
+  readonly handleStylePreview?: StyleChangeHandler | undefined;
   readonly handleStyleCommit?: (
     fill?: string | null,
     stroke?: string | null,
@@ -61,13 +55,17 @@ export interface ContainerInspectorProps {
       fill?: string | null;
       stroke?: string | null;
       strokeWidth?: number | null;
+      fillStyle?: FillStyle | null;
     },
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly showChildChips?: boolean | undefined;
   readonly handleToggleChildChips?: ((rootId: ShapeId) => void) | undefined;
   readonly handleSetTheme?: ((theme: ThemePalette | undefined) => void) | undefined;
   readonly handleSetDarkMode?: ((darkMode: boolean) => void) | undefined;
   readonly handleSetBoundingBox?: ((box: BoundingBox) => void) | undefined;
+  readonly handleBorderRadiusChange?: ((radius: ShapeBorderRadius | null) => void) | undefined;
+  readonly handleTypographyChange?: ((typography: TypographyVariant | null) => void) | undefined;
 }
 
 export function ContainerInspector(props: ContainerInspectorProps): React.JSX.Element {
@@ -99,18 +97,14 @@ export function ContainerInspector(props: ContainerInspectorProps): React.JSX.El
     showChildChips,
     handleToggleChildChips,
     handleSetBoundingBox,
+    handleBorderRadiusChange,
+    handleTypographyChange,
   } = props;
 
-  const roleItems =
-    rootPlatform === PLATFORMS.web
-      ? [
-          { id: ROOT_ROLES.screen, label: "Page" },
-          { id: ROOT_ROLES.component, label: "Component" },
-        ]
-      : [
-          { id: ROOT_ROLES.screen, label: "Screen" },
-          { id: ROOT_ROLES.component, label: "Component" },
-        ];
+  const roleItems = [
+    { id: ROOT_ROLES.screen, label: rootPlatform === PLATFORMS.web ? "Page" : "Screen" },
+    { id: ROOT_ROLES.component, label: "Component" },
+  ];
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
@@ -265,6 +259,30 @@ export function ContainerInspector(props: ContainerInspectorProps): React.JSX.El
               handleStylePreview={handleStylePreview}
               handleStyleCommit={handleStyleCommit}
             />
+          </OdCard>
+        )}
+
+      {/* 6. STYLE (for screens, pages, or non-component containers) */}
+      {rootRole !== ROOT_ROLES.component &&
+        handleStyleChange &&
+        handleStylePreview &&
+        handleStyleCommit && (
+          <OdCard title="Style" collapsible defaultExpanded>
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--od-12)" }}>
+              <ShapeStyleInspector
+                selectedShape={selectedShape}
+                handleStyleChange={handleStyleChange}
+                handleStylePreview={handleStylePreview}
+                handleStyleCommit={handleStyleCommit}
+              />
+              {handleBorderRadiusChange && handleTypographyChange && (
+                <ShapePolishControls
+                  selectedShape={selectedShape}
+                  handleBorderRadiusChange={handleBorderRadiusChange}
+                  handleTypographyChange={handleTypographyChange}
+                />
+              )}
+            </div>
           </OdCard>
         )}
     </div>
