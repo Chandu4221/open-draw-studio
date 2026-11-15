@@ -123,6 +123,8 @@ export function createDefaultSampleDocument(): Document {
         height: 42.68,
       },
       content: "Try OpenDraw",
+      fill: "#0f172a",
+      stroke: "#0f172a",
       meta: {
         order: {},
         semantic: { id: "button", platform: "web" },
@@ -180,6 +182,8 @@ export function createDefaultSampleDocument(): Document {
         height: 43.7,
       },
       content: "Try OpenDraw",
+      fill: "#0f172a",
+      stroke: "#0f172a",
       meta: {
         order: {},
         semantic: { id: "button", platform: "web" },
@@ -664,6 +668,8 @@ export function createDefaultSampleDocument(): Document {
         height: 43.7,
       },
       content: "Try OpenDraw",
+      fill: "#0f172a",
+      stroke: "#0f172a",
       meta: {
         order: {},
         semantic: { id: "button", platform: "web" },

@@ -5,8 +5,10 @@ import type { SemanticConflict, SemanticDefinition } from "@open-draw/semantics"
 import { resolveShapeDisplayName } from "@open-draw/semantics";
 import { OdCard, OdField } from "@open-draw/ui";
 import { GeometrySection } from "./GeometrySection";
+import { ShapePolishControls } from "./ShapePolishControls";
 import { ShapeSemanticSection } from "./ShapeSemanticSection";
 import { ShapeStyleInspector } from "./ShapeStyleInspector";
+import type { ShapeBorderRadius, TypographyVariant } from "../renderers/wireframe-renderers";
 
 export interface ShapeInspectorProps {
   readonly selectedShape: Shape;
@@ -48,6 +50,8 @@ export interface ShapeInspectorProps {
     },
   ) => void;
   readonly handleSetBoundingBox?: ((box: BoundingBox) => void) | undefined;
+  readonly handleBorderRadiusChange?: ((radius: ShapeBorderRadius | null) => void) | undefined;
+  readonly handleTypographyChange?: ((typography: TypographyVariant | null) => void) | undefined;
 }
 
 export function ShapeInspector(props: ShapeInspectorProps): React.JSX.Element {
@@ -66,6 +70,8 @@ export function ShapeInspector(props: ShapeInspectorProps): React.JSX.Element {
     handleStylePreview,
     handleStyleCommit,
     handleSetBoundingBox,
+    handleBorderRadiusChange,
+    handleTypographyChange,
   } = props;
 
   const labelStartRef = useRef<string | null>(null);
@@ -168,12 +174,21 @@ export function ShapeInspector(props: ShapeInspectorProps): React.JSX.Element {
 
       {/* 4. STYLE */}
       <OdCard title="Style" collapsible defaultExpanded>
-        <ShapeStyleInspector
-          selectedShape={selectedShape}
-          handleStyleChange={handleStyleChange}
-          handleStylePreview={handleStylePreview}
-          handleStyleCommit={handleStyleCommit}
-        />
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--od-12)" }}>
+          <ShapeStyleInspector
+            selectedShape={selectedShape}
+            handleStyleChange={handleStyleChange}
+            handleStylePreview={handleStylePreview}
+            handleStyleCommit={handleStyleCommit}
+          />
+          {handleBorderRadiusChange && handleTypographyChange && (
+            <ShapePolishControls
+              selectedShape={selectedShape}
+              handleBorderRadiusChange={handleBorderRadiusChange}
+              handleTypographyChange={handleTypographyChange}
+            />
+          )}
+        </div>
       </OdCard>
     </div>
   );
