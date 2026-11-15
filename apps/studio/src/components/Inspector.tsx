@@ -189,6 +189,8 @@ export function Inspector(props: InspectorProps): React.JSX.Element {
           handleSetBoundingBox={handleSetBoundingBox}
           showChildChips={showChildChips}
           handleToggleChildChips={handleToggleChildChips}
+          handleBorderRadiusChange={handleBorderRadiusChange}
+          handleTypographyChange={handleTypographyChange}
         />
       ) : (
         <ShapeInspector
