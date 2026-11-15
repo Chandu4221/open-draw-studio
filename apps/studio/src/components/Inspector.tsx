@@ -23,6 +23,7 @@ import type { RootRole, SemanticConflict, SemanticDefinition } from "@open-draw/
 import { ContainerInspector } from "./ContainerInspector";
 import { ShapeInspector } from "./ShapeInspector";
 import { MultiSelectInspector } from "./MultiSelectInspector";
+import type { ShapeBorderRadius, TypographyVariant } from "../renderers/wireframe-renderers";
 
 export interface InspectorProps {
   readonly selectedShape: Shape | undefined;
@@ -81,6 +82,8 @@ export interface InspectorProps {
     | undefined;
   readonly handleBatchDelete?: (() => void) | undefined;
   readonly handleClearSelection?: (() => void) | undefined;
+  readonly handleBorderRadiusChange?: ((radius: ShapeBorderRadius | null) => void) | undefined;
+  readonly handleTypographyChange?: ((typography: TypographyVariant | null) => void) | undefined;
 }
 
 export function Inspector(props: InspectorProps): React.JSX.Element {
@@ -121,6 +124,8 @@ export function Inspector(props: InspectorProps): React.JSX.Element {
     handleBatchStyleChange,
     handleBatchDelete,
     handleClearSelection,
+    handleBorderRadiusChange,
+    handleTypographyChange,
   } = props;
 
   const isMultiSelect = (selectedShapes?.length ?? 0) > 1;
@@ -198,6 +203,8 @@ export function Inspector(props: InspectorProps): React.JSX.Element {
           handleStylePreview={handleStylePreview}
           handleStyleCommit={handleStyleCommit}
           handleSetBoundingBox={handleSetBoundingBox}
+          handleBorderRadiusChange={handleBorderRadiusChange}
+          handleTypographyChange={handleTypographyChange}
         />
       )}
     </div>

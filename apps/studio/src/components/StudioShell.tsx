@@ -19,6 +19,7 @@ import { useToast } from "@open-draw/ui";
 import { computeSemanticChipOverlays } from "../canvas-overlays";
 import { useCanvasHover } from "../use-canvas-hover";
 import { useRootChipVisibility } from "../use-root-chip-visibility";
+import { createStudioCustomRenderers } from "../renderers/wireframe-renderers";
 import { StudioLayout } from "../templates/StudioLayout";
 import { Sidebar } from "./Sidebar";
 import { CanvasBrand } from "./CanvasBrand";
@@ -30,6 +31,7 @@ import { KeyboardShortcutsModal } from "./KeyboardShortcutsModal";
 import { useBatchMutations } from "../use-batch-mutations";
 import { useDocumentMutations } from "../use-document-mutations";
 import { useGeometryMutations } from "../use-geometry-mutations";
+import { useShapePolishMutations } from "../use-shape-polish-mutations";
 import { computeInspectionData } from "../use-inspection-data";
 import { useRootThemeMutations } from "../use-root-theme-mutations";
 import { useToolbarActions } from "../use-toolbar-actions";
@@ -114,6 +116,7 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
       document: initialDoc,
       tool: TOOLS.select,
       nestingMode: "containers-only",
+      customRenderers: createStudioCustomRenderers(),
       canvasOptions: {
         visibleChipRootIds: initialRootIds,
       },
@@ -264,6 +267,11 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
     commit,
     render,
   });
+  const polishMutations = useShapePolishMutations({
+    selectedShape: inspection.selectedShape,
+    commit,
+    render,
+  });
 
   const emptyDoc = Object.keys(doc.shapes).length === 0;
 
@@ -298,6 +306,7 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
           {...geometryMutations}
           {...themeMutations}
           {...batchMutations}
+          {...polishMutations}
           doc={doc}
           rootShape={inspection.rootShape}
           isScopedToRoot={inspection.isScopedToRoot}
