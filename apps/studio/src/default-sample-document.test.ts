@@ -75,7 +75,7 @@ describe("createDefaultSampleDocument", () => {
     expect(headerText).toBeDefined();
     expect(headerText?.parentId).toBe("s-7a2b" as ShapeId);
     expect(headerText?.content).toBe("Draw on a real canvas");
-    expect(getShapeSemantic(headerText!)?.id).toBe("header");
+    expect(getShapeSemantic(headerText!)?.id).toBe("heading");
 
     // Level 4: Body Text inside Card s-7a2d
     const bodyText = doc.shapes["s-7a2d" as ShapeId];

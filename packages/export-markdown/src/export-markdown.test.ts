@@ -478,7 +478,9 @@ describe("exportMarkdown", () => {
     expect(md).toContain("primary: Color(0xFF02569B),");
 
     // Stack guidance
-    expect(md).toContain("- **Stack Guidance (Web)**: Implement as modular React components");
+    expect(md).toContain(
+      "- **Stack Guidance (Web)**: Detect and adapt to the host project's environment",
+    );
     expect(md).toContain("- **Stack Guidance (Android)**: Implement using Android Jetpack Compose");
     expect(md).toContain("- **Stack Guidance (Flutter)**: Implement using Flutter and Dart");
   });
