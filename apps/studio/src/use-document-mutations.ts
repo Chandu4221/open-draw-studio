@@ -1,4 +1,4 @@
-import type { DeviceType, Command, Shape } from "@open-draw/canvas";
+import type { DeviceType, Command, FillStyle, Shape } from "@open-draw/canvas";
 import { COMMANDS, isRootId } from "@open-draw/canvas";
 import type { DesignStyleId, PlatformId, PlatformProfile, StyleId } from "@open-draw/profiles";
 import { PLATFORMS, PLATFORM_PROFILES } from "@open-draw/profiles";
@@ -45,11 +45,13 @@ export interface DocumentMutations {
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly handleStylePreview: (
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly handleStyleCommit: (
     fill?: string | null,
@@ -59,7 +61,9 @@ export interface DocumentMutations {
       fill?: string | null;
       stroke?: string | null;
       strokeWidth?: number | null;
+      fillStyle?: FillStyle | null;
     },
+    fillStyle?: FillStyle | null,
   ) => void;
 }
 
@@ -272,9 +276,12 @@ export function useDocumentMutations(props: DocumentMutationsProps): DocumentMut
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
+    fillStyle?: FillStyle | null,
   ): void {
     if (!selectedShape) return;
-    commit([{ type: COMMANDS.setShapeStyle, id: selectedShape.id, fill, stroke, strokeWidth }]);
+    commit([
+      { type: COMMANDS.setShapeStyle, id: selectedShape.id, fill, stroke, strokeWidth, fillStyle },
+    ]);
     render();
   }
 
@@ -282,11 +289,24 @@ export function useDocumentMutations(props: DocumentMutationsProps): DocumentMut
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
+    fillStyle?: FillStyle | null,
   ): void {
     if (!selectedShape) return;
-    commit([{ type: COMMANDS.setShapeStyle, id: selectedShape.id, fill, stroke, strokeWidth }], {
-      record: false,
-    });
+    commit(
+      [
+        {
+          type: COMMANDS.setShapeStyle,
+          id: selectedShape.id,
+          fill,
+          stroke,
+          strokeWidth,
+          fillStyle,
+        },
+      ],
+      {
+        record: false,
+      },
+    );
     render();
   }
 
@@ -298,7 +318,9 @@ export function useDocumentMutations(props: DocumentMutationsProps): DocumentMut
       fill?: string | null;
       stroke?: string | null;
       strokeWidth?: number | null;
+      fillStyle?: FillStyle | null;
     },
+    fillStyle?: FillStyle | null,
   ): void {
     if (!selectedShape) return;
     const customInverse: readonly Command[] = [
@@ -308,12 +330,25 @@ export function useDocumentMutations(props: DocumentMutationsProps): DocumentMut
         fill: fill !== undefined ? (startStyle?.fill ?? null) : undefined,
         stroke: stroke !== undefined ? (startStyle?.stroke ?? null) : undefined,
         strokeWidth: strokeWidth !== undefined ? (startStyle?.strokeWidth ?? null) : undefined,
+        fillStyle: fillStyle !== undefined ? (startStyle?.fillStyle ?? null) : undefined,
       },
     ];
-    commit([{ type: COMMANDS.setShapeStyle, id: selectedShape.id, fill, stroke, strokeWidth }], {
-      record: true,
-      customInverse,
-    });
+    commit(
+      [
+        {
+          type: COMMANDS.setShapeStyle,
+          id: selectedShape.id,
+          fill,
+          stroke,
+          strokeWidth,
+          fillStyle,
+        },
+      ],
+      {
+        record: true,
+        customInverse,
+      },
+    );
     render();
   }
 

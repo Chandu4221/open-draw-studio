@@ -1,147 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import type { Shape } from "@open-draw/canvas";
-import { OdField, OdIcon } from "@open-draw/ui";
-
-const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+import { FILL_STYLES, SHAPE_KINDS, type FillStyle, type Shape } from "@open-draw/canvas";
+import { OdField, OdIcon, OdSegmentedControl, type OdSegmentedItem } from "@open-draw/ui";
+import { ColorPickerRow } from "./ColorPickerRow";
 
 type EditSession<T> = { start: T | null; active: boolean };
-
-function toColorInputValue(val: string | undefined | null, fallback: string): string {
-  if (val && HEX_COLOR_RE.test(val)) return val;
-  return fallback;
-}
-
-interface ColorPickerRowProps {
-  readonly label: string;
-  readonly fieldKey: "fill" | "stroke";
-  readonly value: string | undefined | null;
-  readonly fallbackHex: string;
-  readonly shapeId: string;
-  readonly onPreview: (val: string | null) => void;
-  readonly onCommit: (val: string | null, startVal: string | null) => void;
-  readonly onReset: () => void;
-}
-
-function ColorPickerRow(props: ColorPickerRowProps): React.JSX.Element {
-  const { label, fieldKey, value, fallbackHex, shapeId, onPreview, onCommit, onReset } = props;
-  const hexInputId = `shape-${shapeId}-${fieldKey}-hex`;
-  const colorPickerId = `shape-${shapeId}-${fieldKey}-color`;
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const sessionRef = useRef<EditSession<string>>({ start: null, active: false });
-
-  useEffect(() => {
-    sessionRef.current = { start: null, active: false };
-  }, [shapeId]);
-
-  useEffect(() => {
-    const el = inputRef.current;
-    if (!el) return;
-    const onNativeChange = () => {
-      if (sessionRef.current.active) {
-        const start = sessionRef.current.start;
-        sessionRef.current = { start: null, active: false };
-        if (el.value !== start) onCommit(el.value, start);
-      }
-    };
-    el.addEventListener("change", onNativeChange);
-    return () => el.removeEventListener("change", onNativeChange);
-  }, [onCommit]);
-
-  const commitValue = (raw: string | null) => {
-    if (sessionRef.current.active) {
-      const start = sessionRef.current.start;
-      sessionRef.current = { start: null, active: false };
-      const val = raw === null ? null : raw.trim().length === 0 ? null : raw.trim();
-      if (val !== start) onCommit(val, start);
-    }
-  };
-
-  const startSession = () => {
-    if (!sessionRef.current.active) {
-      sessionRef.current = { start: value ?? null, active: true };
-    }
-  };
-
-  return (
-    <OdField label={label} htmlFor={hexInputId}>
-      <div style={{ display: "flex", gap: "var(--od-4)", alignItems: "center", width: "100%" }}>
-        <input
-          ref={inputRef}
-          id={colorPickerId}
-          type="color"
-          className="od-input"
-          aria-label={`${label} color picker`}
-          value={toColorInputValue(value, fallbackHex)}
-          onFocus={startSession}
-          onChange={(e) => {
-            startSession();
-            onPreview(e.target.value);
-          }}
-          onBlur={() => {
-            if (sessionRef.current.active) {
-              const start = sessionRef.current.start;
-              sessionRef.current = { start: null, active: false };
-              const val = inputRef.current?.value ?? value ?? null;
-              if (val !== start) onCommit(val, start);
-            }
-          }}
-          style={{
-            width: "26px",
-            height: "var(--od-control-height)",
-            padding: 0,
-            cursor: "pointer",
-            flexShrink: 0,
-          }}
-        />
-        <input
-          id={hexInputId}
-          type="text"
-          className="od-input"
-          placeholder={fallbackHex}
-          aria-label={`${label} hex code or none`}
-          value={value ?? ""}
-          onFocus={startSession}
-          onChange={(e) => {
-            const raw = e.target.value.trim();
-            onPreview(raw.length === 0 ? null : raw);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              commitValue(e.currentTarget.value);
-              (e.target as HTMLElement).blur();
-            }
-          }}
-          onBlur={(e) => commitValue(e.target.value)}
-          style={{
-            flex: 1,
-            minWidth: 0,
-            width: 0,
-            padding: "0 var(--od-4)",
-            fontSize: "var(--od-text-xs)",
-          }}
-        />
-        <button
-          type="button"
-          onClick={onReset}
-          className="od-btn od-btn--ghost"
-          aria-label={`Reset ${label.toLowerCase()} to default`}
-          title={`Reset ${label.toLowerCase()} to default`}
-          style={{
-            height: "var(--od-control-height)",
-            width: "24px",
-            padding: 0,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <OdIcon name="undo" />
-        </button>
-      </div>
-    </OdField>
-  );
-}
 
 interface StrokeWidthRowProps {
   readonly value: number | undefined | null;
@@ -231,10 +93,11 @@ function StrokeWidthRow(props: StrokeWidthRowProps): React.JSX.Element {
   );
 }
 
-type StyleChangeHandler = (
+export type StyleChangeHandler = (
   fill?: string | null,
   stroke?: string | null,
   strokeWidth?: number | null,
+  fillStyle?: FillStyle | null,
 ) => void;
 
 export interface ShapeStyleInspectorProps {
@@ -245,25 +108,92 @@ export interface ShapeStyleInspectorProps {
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
-    startStyle?: { fill?: string | null; stroke?: string | null; strokeWidth?: number | null },
+    startStyle?: {
+      fill?: string | null;
+      stroke?: string | null;
+      strokeWidth?: number | null;
+      fillStyle?: FillStyle | null;
+    },
+    fillStyle?: FillStyle | null,
   ) => void;
 }
+
+const FILL_STYLE_ITEMS: readonly OdSegmentedItem<FillStyle>[] = [
+  {
+    id: FILL_STYLES.none,
+    icon: "fill-none",
+    tooltip: "Transparent (none)",
+    "aria-label": "Transparent fill",
+  },
+  {
+    id: FILL_STYLES.subtle,
+    icon: "fill-subtle",
+    tooltip: "Subtle (10% tint)",
+    "aria-label": "Subtle fill",
+  },
+  {
+    id: FILL_STYLES.solid,
+    icon: "fill-solid",
+    tooltip: "Solid",
+    "aria-label": "Solid fill",
+  },
+  {
+    id: FILL_STYLES.hatch,
+    icon: "fill-hatch",
+    tooltip: "Hatch (stripes)",
+    "aria-label": "Hatch fill",
+  },
+];
 
 export function ShapeStyleInspector(props: ShapeStyleInspectorProps): React.JSX.Element {
   const { selectedShape, handleStyleChange, handleStylePreview, handleStyleCommit } = props;
 
+  const supportsFill =
+    selectedShape.kind === SHAPE_KINDS.rect ||
+    selectedShape.kind === SHAPE_KINDS.ellipse ||
+    selectedShape.kind === SHAPE_KINDS.page ||
+    selectedShape.kind === SHAPE_KINDS.section;
+
+  const currentFillStyle: FillStyle =
+    selectedShape.fillStyle ??
+    (selectedShape.fill === "none" || selectedShape.fill === "transparent"
+      ? FILL_STYLES.none
+      : FILL_STYLES.solid);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--od-12)" }}>
-      <ColorPickerRow
-        label="Fill"
-        fieldKey="fill"
-        value={selectedShape.fill}
-        fallbackHex="#ffffff"
-        shapeId={selectedShape.id}
-        onPreview={(val) => handleStylePreview(val, undefined, undefined)}
-        onCommit={(val, start) => handleStyleCommit(val, undefined, undefined, { fill: start })}
-        onReset={() => handleStyleChange(null, undefined, undefined)}
-      />
+      {supportsFill && (
+        <>
+          <OdField label="Fill Style">
+            <OdSegmentedControl
+              items={FILL_STYLE_ITEMS}
+              value={currentFillStyle}
+              onSelect={(val) => {
+                handleStyleCommit(
+                  undefined,
+                  undefined,
+                  undefined,
+                  { fillStyle: selectedShape.fillStyle ?? null },
+                  val,
+                );
+              }}
+              aria-label="Shape fill style"
+            />
+          </OdField>
+          <ColorPickerRow
+            label="Fill"
+            fieldKey="fill"
+            value={selectedShape.fill}
+            fallbackHex="#ffffff"
+            shapeId={selectedShape.id}
+            onPreview={(val) => handleStylePreview(val, undefined, undefined, undefined)}
+            onCommit={(val, start) =>
+              handleStyleCommit(val, undefined, undefined, { fill: start }, undefined)
+            }
+            onReset={() => handleStyleChange(null, undefined, undefined, null)}
+          />
+        </>
+      )}
       <div
         style={{
           display: "grid",
@@ -277,18 +207,20 @@ export function ShapeStyleInspector(props: ShapeStyleInspectorProps): React.JSX.
           value={selectedShape.stroke}
           fallbackHex="#1f2933"
           shapeId={selectedShape.id}
-          onPreview={(val) => handleStylePreview(undefined, val, undefined)}
-          onCommit={(val, start) => handleStyleCommit(undefined, val, undefined, { stroke: start })}
-          onReset={() => handleStyleChange(undefined, null, undefined)}
+          onPreview={(val) => handleStylePreview(undefined, val, undefined, undefined)}
+          onCommit={(val, start) =>
+            handleStyleCommit(undefined, val, undefined, { stroke: start }, undefined)
+          }
+          onReset={() => handleStyleChange(undefined, null, undefined, undefined)}
         />
         <StrokeWidthRow
           value={selectedShape.strokeWidth}
           shapeId={selectedShape.id}
-          onPreview={(val) => handleStylePreview(undefined, undefined, val)}
+          onPreview={(val) => handleStylePreview(undefined, undefined, val, undefined)}
           onCommit={(val, start) =>
-            handleStyleCommit(undefined, undefined, val, { strokeWidth: start })
+            handleStyleCommit(undefined, undefined, val, { strokeWidth: start }, undefined)
           }
-          onReset={() => handleStyleChange(undefined, undefined, null)}
+          onReset={() => handleStyleChange(undefined, undefined, null, undefined)}
         />
       </div>
     </div>

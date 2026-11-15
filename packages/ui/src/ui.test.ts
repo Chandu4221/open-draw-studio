@@ -56,6 +56,10 @@ describe("icons registry", () => {
       "search",
       "link",
       "link-off",
+      "fill-none",
+      "fill-subtle",
+      "fill-solid",
+      "fill-hatch",
     ] as const;
 
     for (const iconId of requiredIcons) {

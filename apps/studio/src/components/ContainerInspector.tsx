@@ -1,5 +1,4 @@
-import React from "react";
-import type { BoundingBox, Shape, ShapeId } from "@open-draw/canvas";
+import type { BoundingBox, FillStyle, Shape, ShapeId } from "@open-draw/canvas";
 import {
   PLATFORM_BY_VALUE,
   PLATFORMS,
@@ -47,11 +46,13 @@ export interface ContainerInspectorProps {
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly handleStylePreview?: (
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly handleStyleCommit?: (
     fill?: string | null,
@@ -61,7 +62,9 @@ export interface ContainerInspectorProps {
       fill?: string | null;
       stroke?: string | null;
       strokeWidth?: number | null;
+      fillStyle?: FillStyle | null;
     },
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly showChildChips?: boolean | undefined;
   readonly handleToggleChildChips?: ((rootId: ShapeId) => void) | undefined;

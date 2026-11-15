@@ -1,5 +1,4 @@
-import React from "react";
-import type { Shape } from "@open-draw/canvas";
+import type { FillStyle, Shape } from "@open-draw/canvas";
 import type { PlatformProfile } from "@open-draw/profiles";
 import {
   CONTROL_TYPES,
@@ -24,11 +23,13 @@ export interface ComponentSemanticSectionProps {
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly handleStylePreview: (
     fill?: string | null,
     stroke?: string | null,
     strokeWidth?: number | null,
+    fillStyle?: FillStyle | null,
   ) => void;
   readonly handleStyleCommit: (
     fill?: string | null,
@@ -38,7 +39,9 @@ export interface ComponentSemanticSectionProps {
       fill?: string | null;
       stroke?: string | null;
       strokeWidth?: number | null;
+      fillStyle?: FillStyle | null;
     },
+    fillStyle?: FillStyle | null,
   ) => void;
 }
 

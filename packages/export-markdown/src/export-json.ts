@@ -27,6 +27,9 @@ import {
   type RootRole,
   type ThemePalette,
 } from "@open-draw/semantics";
+import { compileAiDirectives } from "./ai-directives";
+import { formatChipId } from "./chip-id";
+import type { JsonExportOptions } from "./types";
 
 export class DocumentError extends Error {
   readonly code: string;
@@ -42,9 +45,6 @@ const BUILTIN_SHAPE_KINDS = new Set<string>(Object.values(SHAPE_KINDS));
 function isCustomShape(shape: Shape): boolean {
   return !BUILTIN_SHAPE_KINDS.has(shape.kind);
 }
-import { compileAiDirectives } from "./ai-directives";
-import { formatChipId } from "./chip-id";
-import type { JsonExportOptions } from "./types";
 
 export interface ExportedJsonDocument {
   readonly schema: {
@@ -72,6 +72,7 @@ const RESERVED_CUSTOM_DATA_KEYS = new Set([
   "fill",
   "stroke",
   "strokeWidth",
+  "fillStyle",
 ]);
 
 /**
@@ -172,6 +173,9 @@ export function exportJson(doc: Document, options?: JsonExportOptions): string {
     }
     if (shape.strokeWidth !== undefined) {
       shapeRecord.strokeWidth = roundCoordinate(shape.strokeWidth, `shape ${shape.id} strokeWidth`);
+    }
+    if (shape.fillStyle !== undefined) {
+      shapeRecord.fillStyle = shape.fillStyle;
     }
 
     if (isCustomShape(shape)) {
