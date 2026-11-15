@@ -10,9 +10,11 @@ import {
   resolveShapeBorderRadius,
   resolveShapeCornerRadii,
   resolveShapeTypography,
+  resolveWireframeFill,
 } from "./wireframe-renderers";
 import {
   type BoundingBox,
+  FILL_STYLES,
   ROOT_ID,
   SHAPE_KINDS,
   type Shape,
@@ -224,6 +226,91 @@ describe("wireframe-renderers", () => {
       expect(svg).not.toContain("<rect");
       expect(svg).toContain('fill="#ffffff"');
       expect(svg).toContain('stroke="#0f172a"');
+    });
+
+    it("renders fill='none' for shape with fillStyle none (two-way sync, Option A)", () => {
+      const shape: Shape = {
+        id: "s-none" as ShapeId,
+        kind: SHAPE_KINDS.rect,
+        parentId: ROOT_ID,
+        boundingBox: { x: 0, y: 0, width: 100, height: 40 },
+        fillStyle: FILL_STYLES.none,
+        fill: "#ffffff",
+        meta: { order: {} },
+      };
+      const svg = renderPolishedRect(shape, { x: 0, y: 0, width: 100, height: 40 });
+      expect(svg).toContain('fill="none"');
+      expect(svg).not.toContain('fill="#ffffff"');
+    });
+
+    it("renders subtle fill with 10% opacity for fillStyle subtle", () => {
+      const shape: Shape = {
+        id: "s-subtle" as ShapeId,
+        kind: SHAPE_KINDS.rect,
+        parentId: ROOT_ID,
+        boundingBox: { x: 0, y: 0, width: 100, height: 40 },
+        fillStyle: FILL_STYLES.subtle,
+        stroke: "#0f172a",
+        meta: { order: {} },
+      };
+      const svg = renderPolishedRect(shape, { x: 0, y: 0, width: 100, height: 40 });
+      expect(svg).toContain('fill-opacity="0.1"');
+      expect(svg).toContain('fill="#0f172a"');
+    });
+
+    it("renders hatch pattern with defs and pattern url for fillStyle hatch", () => {
+      const shape: Shape = {
+        id: "s-hatch" as ShapeId,
+        kind: SHAPE_KINDS.rect,
+        parentId: ROOT_ID,
+        boundingBox: { x: 0, y: 0, width: 100, height: 40 },
+        fillStyle: FILL_STYLES.hatch,
+        stroke: "#0f172a",
+        meta: { order: {} },
+      };
+      const svg = renderPolishedRect(shape, { x: 0, y: 0, width: 100, height: 40 });
+      expect(svg).toContain("<defs><pattern id=");
+      expect(svg).toContain('fill="url(#od-pattern-hatch-s-hatch)"');
+    });
+
+    it("renders solid fill for fillStyle solid", () => {
+      const shape: Shape = {
+        id: "s-solid" as ShapeId,
+        kind: SHAPE_KINDS.rect,
+        parentId: ROOT_ID,
+        boundingBox: { x: 0, y: 0, width: 100, height: 40 },
+        fillStyle: FILL_STYLES.solid,
+        fill: "#3b82f6",
+        meta: { order: {} },
+      };
+      const svg = renderPolishedRect(shape, { x: 0, y: 0, width: 100, height: 40 });
+      expect(svg).toContain('fill="#3b82f6"');
+    });
+  });
+
+  describe("resolveWireframeFill", () => {
+    it("returns fill='none' when fillStyle is none", () => {
+      const shape: Shape = {
+        id: "s-f-none" as ShapeId,
+        kind: SHAPE_KINDS.rect,
+        parentId: ROOT_ID,
+        boundingBox: dummyBox,
+        fillStyle: FILL_STYLES.none,
+        fill: "#ffffff",
+        meta: { order: {} },
+      };
+      expect(resolveWireframeFill(shape)).toEqual({ fill: "none" });
+    });
+
+    it("returns transparent none fallback when shape has no fill and no fillStyle", () => {
+      const shape: Shape = {
+        id: "s-f-default" as ShapeId,
+        kind: SHAPE_KINDS.rect,
+        parentId: ROOT_ID,
+        boundingBox: dummyBox,
+        meta: { order: {} },
+      };
+      expect(resolveWireframeFill(shape)).toEqual({ fill: "none" });
     });
   });
 

@@ -74,4 +74,53 @@ describe("ShapeStyleInspector (Option A, R-005, R-008, ADR-0007)", () => {
     expect(html).toContain("Stroke");
     expect(html).toContain("Stroke Width");
   });
+
+  it("defaults to transparent (none) when shape has neither fillStyle nor fill (two-way sync, Option A)", () => {
+    const unstyledRect: Shape = {
+      id: "s-unstyled" as ShapeId,
+      kind: SHAPE_KINDS.rect,
+      parentId: ROOT_ID,
+      boundingBox: { x: 0, y: 0, width: 100, height: 40 },
+      meta: { order: {} },
+    };
+
+    const html = renderToString(
+      <ShapeStyleInspector
+        selectedShape={unstyledRect}
+        handleStyleChange={vi.fn()}
+        handleStylePreview={vi.fn()}
+        handleStyleCommit={vi.fn()}
+      />,
+    );
+
+    // Button 1 (Transparent fill) must be active with aria-pressed="true"
+    expect(html).toContain(
+      'class="od-segmented__item od-segmented__item--active" aria-pressed="true" aria-label="Transparent fill"',
+    );
+  });
+
+  it("defaults to solid when shape has fill but no fillStyle", () => {
+    const solidRect: Shape = {
+      id: "s-solid" as ShapeId,
+      kind: SHAPE_KINDS.rect,
+      parentId: ROOT_ID,
+      boundingBox: { x: 0, y: 0, width: 100, height: 40 },
+      fill: "#ff0000",
+      meta: { order: {} },
+    };
+
+    const html = renderToString(
+      <ShapeStyleInspector
+        selectedShape={solidRect}
+        handleStyleChange={vi.fn()}
+        handleStylePreview={vi.fn()}
+        handleStyleCommit={vi.fn()}
+      />,
+    );
+
+    // Button 3 (Solid fill) must be active with aria-pressed="true"
+    expect(html).toContain(
+      'class="od-segmented__item od-segmented__item--active" aria-pressed="true" aria-label="Solid fill"',
+    );
+  });
 });

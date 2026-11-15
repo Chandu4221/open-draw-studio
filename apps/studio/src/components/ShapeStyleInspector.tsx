@@ -156,9 +156,9 @@ export function ShapeStyleInspector(props: ShapeStyleInspectorProps): React.JSX.
 
   const currentFillStyle: FillStyle =
     selectedShape.fillStyle ??
-    (selectedShape.fill === "none" || selectedShape.fill === "transparent"
-      ? FILL_STYLES.none
-      : FILL_STYLES.solid);
+    (selectedShape.fill && selectedShape.fill !== "none" && selectedShape.fill !== "transparent"
+      ? FILL_STYLES.solid
+      : FILL_STYLES.none);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--od-12)" }}>
@@ -169,11 +169,18 @@ export function ShapeStyleInspector(props: ShapeStyleInspectorProps): React.JSX.
               items={FILL_STYLE_ITEMS}
               value={currentFillStyle}
               onSelect={(val) => {
+                const nextFill =
+                  val === FILL_STYLES.solid &&
+                  (!selectedShape.fill ||
+                    selectedShape.fill === "none" ||
+                    selectedShape.fill === "transparent")
+                    ? "#ffffff"
+                    : undefined;
                 handleStyleCommit(
+                  nextFill,
                   undefined,
                   undefined,
-                  undefined,
-                  { fillStyle: selectedShape.fillStyle ?? null },
+                  { fillStyle: selectedShape.fillStyle ?? null, fill: selectedShape.fill ?? null },
                   val,
                 );
               }}
@@ -186,10 +193,32 @@ export function ShapeStyleInspector(props: ShapeStyleInspectorProps): React.JSX.
             value={selectedShape.fill}
             fallbackHex="#ffffff"
             shapeId={selectedShape.id}
-            onPreview={(val) => handleStylePreview(val, undefined, undefined, undefined)}
-            onCommit={(val, start) =>
-              handleStyleCommit(val, undefined, undefined, { fill: start }, undefined)
-            }
+            onPreview={(val) => {
+              const nextFillStyle =
+                val &&
+                val !== "none" &&
+                val !== "transparent" &&
+                currentFillStyle === FILL_STYLES.none
+                  ? FILL_STYLES.solid
+                  : undefined;
+              handleStylePreview(val, undefined, undefined, nextFillStyle);
+            }}
+            onCommit={(val, start) => {
+              const nextFillStyle =
+                val &&
+                val !== "none" &&
+                val !== "transparent" &&
+                currentFillStyle === FILL_STYLES.none
+                  ? FILL_STYLES.solid
+                  : undefined;
+              handleStyleCommit(
+                val,
+                undefined,
+                undefined,
+                { fill: start, fillStyle: selectedShape.fillStyle ?? null },
+                nextFillStyle,
+              );
+            }}
             onReset={() => handleStyleChange(null, undefined, undefined, null)}
           />
         </>
