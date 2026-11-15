@@ -72,4 +72,72 @@ describe("ShapePolishControls (R-008, R-015, ADR-0007)", () => {
     expect(html).toContain("H2");
     expect(html).toContain("Body");
   });
+
+  it("reflects semantic button appearance with Pill preset and 20px corners", () => {
+    const buttonShape: Shape = {
+      id: "s-btn" as ShapeId,
+      kind: SHAPE_KINDS.rect,
+      parentId: ROOT_ID,
+      boundingBox: { x: 0, y: 0, width: 100, height: 40 },
+      content: "Try OpenDraw",
+      meta: { order: {}, semantic: { id: "button", platform: "web" } },
+    };
+    const html = renderToString(
+      <ShapePolishControls
+        selectedShape={buttonShape}
+        handleBorderRadiusChange={vi.fn()}
+        handleTypographyChange={vi.fn()}
+      />,
+    );
+
+    // Pill preset active
+    expect(html).toContain('aria-pressed="true" aria-label="Pill"');
+    // Corner inputs have 20px
+    expect(html).toContain('aria-label="Top left rounded corner"');
+    expect(html).toContain('value="20"');
+    expect(html).toContain('aria-label="All rounded corners"');
+    // Typography has Button active
+    expect(html).toContain('aria-pressed="true" aria-label="Button"');
+  });
+
+  it("reflects semantic card appearance with Card preset and 8px corners", () => {
+    const cardShape: Shape = {
+      id: "s-card" as ShapeId,
+      kind: SHAPE_KINDS.rect,
+      parentId: ROOT_ID,
+      boundingBox: { x: 0, y: 0, width: 200, height: 100 },
+      meta: { order: {}, semantic: { id: "card", platform: "web" } },
+    };
+    const html = renderToString(
+      <ShapePolishControls
+        selectedShape={cardShape}
+        handleBorderRadiusChange={vi.fn()}
+        handleTypographyChange={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain('aria-pressed="true" aria-label="Card"');
+    expect(html).toContain('aria-label="Top left rounded corner"');
+    expect(html).toContain('value="8"');
+  });
+
+  it("reflects semantic heading appearance matching heading level", () => {
+    const h2Shape: Shape = {
+      id: "s-h2" as ShapeId,
+      kind: SHAPE_KINDS.text,
+      parentId: ROOT_ID,
+      boundingBox: { x: 0, y: 0, width: 200, height: 40 },
+      content: "Subheading",
+      meta: { order: {}, semantic: { id: "heading", platform: "web", properties: { level: "2" } } },
+    };
+    const html = renderToString(
+      <ShapePolishControls
+        selectedShape={h2Shape}
+        handleBorderRadiusChange={vi.fn()}
+        handleTypographyChange={vi.fn()}
+      />,
+    );
+
+    expect(html).toContain('aria-pressed="true" aria-label="H2"');
+  });
 });

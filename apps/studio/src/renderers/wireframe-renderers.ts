@@ -222,36 +222,45 @@ export function generateRoundedRectPath(
 }
 
 /**
- * Resolves typography specifications (font-size, font-weight) for a text or labeled shape.
+ * Resolves the effective typography variant for a shape (either from explicit meta or derived from semantic role).
  */
-export function resolveShapeTypography(shape: Shape): TypographySpec {
+export function resolveShapeTypographyVariant(shape: Shape): TypographyVariant {
   const metaTypo =
     (shape.meta.pluginData?.[PLUGIN_TYPOGRAPHY] as TypographyVariant | undefined | null) ??
     (shape.meta.typography as TypographyVariant | undefined);
   if (metaTypo && metaTypo in TYPOGRAPHY_SPECS) {
-    return TYPOGRAPHY_SPECS[metaTypo];
+    return metaTypo;
   }
 
   // Derive from semantic tag properties or tag ID
   const semantic = shape.meta.semantic as
     { id?: string; properties?: Record<string, unknown> } | undefined;
   const tagId = semantic?.id;
-  const level = semantic?.properties?.level;
+  const rawLevel = semantic?.properties?.level;
+  const level = typeof rawLevel === "number" ? rawLevel : Number(rawLevel);
 
   if (tagId === "heading" || tagId === "header") {
-    if (level === 1) return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.h1];
-    if (level === 2) return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.h2];
-    if (level === 3) return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.h3];
-    return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.h1];
+    if (level === 1) return TYPOGRAPHY_VARIANTS.h1;
+    if (level === 2) return TYPOGRAPHY_VARIANTS.h2;
+    if (level === 3) return TYPOGRAPHY_VARIANTS.h3;
+    return TYPOGRAPHY_VARIANTS.h1;
   }
-  if (tagId === "button") {
-    return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.button];
+  if (tagId === "button" || tagId === "floating-action-button") {
+    return TYPOGRAPHY_VARIANTS.button;
   }
   if (tagId === "caption" || tagId === "badge" || tagId === "chip") {
-    return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.caption];
+    return TYPOGRAPHY_VARIANTS.caption;
   }
 
-  return TYPOGRAPHY_SPECS[TYPOGRAPHY_VARIANTS.body];
+  return TYPOGRAPHY_VARIANTS.body;
+}
+
+/**
+ * Resolves typography specifications (font-size, font-weight) for a text or labeled shape.
+ */
+export function resolveShapeTypography(shape: Shape): TypographySpec {
+  const variant = resolveShapeTypographyVariant(shape);
+  return TYPOGRAPHY_SPECS[variant];
 }
 
 function buildScopedTextStyle(shape: Shape): string {
@@ -309,7 +318,7 @@ export function renderPolishedRect(shape: Shape, box: BoundingBox): string {
   const radii = resolveShapeCornerRadii(shape, box);
   const fill = escapeXml(shape.fill ?? "none");
   const stroke = shape.stroke ?? WIREFRAME_PALETTE.borderDark;
-  const strokeWidth = num(shape.strokeWidth, 2);
+  const strokeWidth = num(shape.strokeWidth, 1);
   return `${buildScopedTextStyle(shape)}${renderRectSvg(box, radii, fill, stroke, strokeWidth)}`;
 }
 
@@ -321,7 +330,7 @@ export function renderPolishedText(shape: Shape, box: BoundingBox): string {
   if (shape.fill !== undefined && shape.fill !== "none" && shape.fill !== "transparent") {
     const fill = escapeXml(shape.fill);
     const radii = resolveShapeCornerRadii(shape, box);
-    return `${styleTag}${renderRectSvg(box, radii, fill, shape.stroke, num(shape.strokeWidth, 2))}`;
+    return `${styleTag}${renderRectSvg(box, radii, fill, shape.stroke, num(shape.strokeWidth, 1))}`;
   }
   return styleTag;
 }

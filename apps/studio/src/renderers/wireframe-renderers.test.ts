@@ -135,6 +135,32 @@ describe("wireframe-renderers", () => {
       expect(typo.fontWeight).toBe(700);
     });
 
+    it("resolves heading typography when level is string '2' or '3'", () => {
+      const shapeH2: Shape = {
+        id: "s-h2" as ShapeId,
+        kind: SHAPE_KINDS.text,
+        parentId: ROOT_ID,
+        boundingBox: dummyBox,
+        meta: {
+          order: {},
+          semantic: { id: "heading", platform: "web", properties: { level: "2" } },
+        },
+      };
+      expect(resolveShapeTypography(shapeH2).fontSize).toBe(18);
+
+      const shapeH3: Shape = {
+        id: "s-h3" as ShapeId,
+        kind: SHAPE_KINDS.text,
+        parentId: ROOT_ID,
+        boundingBox: dummyBox,
+        meta: {
+          order: {},
+          semantic: { id: "heading", platform: "web", properties: { level: "3" } },
+        },
+      };
+      expect(resolveShapeTypography(shapeH3).fontSize).toBe(15);
+    });
+
     it("resolves explicit typography from meta", () => {
       const shape: Shape = {
         id: "s-t1" as ShapeId,
