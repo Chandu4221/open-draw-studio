@@ -16,8 +16,7 @@ import {
 } from "@open-draw/semantics";
 
 export const ROOT_CONTAINER_KINDS: ReadonlySet<string> = new Set([
-  SHAPE_KINDS.page,
-  SHAPE_KINDS.section,
+  SHAPE_KINDS.group,
   SHAPE_KINDS.rect,
 ]);
 
@@ -108,8 +107,7 @@ export function normalizeStudioDocument(doc: Document): Document {
 
       const semantic = getShapeSemantic(shape);
       const isExplicitContainer =
-        shape.kind === SHAPE_KINDS.page ||
-        shape.kind === SHAPE_KINDS.section ||
+        shape.kind === SHAPE_KINDS.group ||
         (semantic !== undefined && isContainerSemantic(semantic));
 
       const isExplicitLeaf = semantic !== undefined && isLeafComponentSemantic(semantic);

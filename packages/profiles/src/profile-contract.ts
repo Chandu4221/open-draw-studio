@@ -1,6 +1,6 @@
 // Platform and style profile contracts (ADR-0004 D5, D7).
 // Zero dependencies, pure data types and registries (R-005, R-023, R-026).
-import type { DeviceType } from "@open-draw/canvas";
+import type { DeviceType } from "./device-types";
 import type { PlatformId } from "./platforms";
 import type { SemanticDefinition, SemanticId } from "./semantic-contract";
 

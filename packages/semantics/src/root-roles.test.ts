@@ -2,13 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseShapeId, ROOT_ID } from "@open-draw/canvas";
 import { PLATFORMS } from "@open-draw/profiles";
 import { ROOT_ROLES } from "./root-roles";
-import {
-  createDocument,
-  createEllipse,
-  createPage,
-  createRect,
-  createText,
-} from "@open-draw/canvas";
+import { createDocument, createEllipse, createRect, createText } from "@open-draw/canvas";
 import { ANDROID_NATIVE_PROFILE, FLUTTER_PROFILE, WEB_PROFILE } from "@open-draw/profiles";
 import {
   computeSemanticConflict,
@@ -23,7 +17,7 @@ describe("root roles (R-024, R-026, R-042)", () => {
 
   it("resolves root role defaulting to screen baseline (R-024)", () => {
     const doc = createDocument([
-      createPage(rootId, { x: 0, y: 0, width: 1000, height: 1000 }),
+      createRect(rootId, { x: 0, y: 0, width: 1000, height: 1000 }),
       createRect(childId, { x: 10, y: 10, width: 100, height: 50 }, { parent: rootId }),
     ]);
 

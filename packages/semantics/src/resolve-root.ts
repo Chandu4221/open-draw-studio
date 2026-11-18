@@ -11,6 +11,7 @@ import {
   PLUGIN_DESIGN_STYLE,
   PLUGIN_ROOT_PLATFORM,
   PLUGIN_ROOT_ROLE,
+  PLUGIN_ROOT_STYLE,
   PLUGIN_THEME,
 } from "./plugins";
 
@@ -65,7 +66,10 @@ export function resolveRootPlatform(doc: Document, shapeId: ShapeId): PlatformId
  */
 export function resolveRootStyle(doc: Document, shapeId: ShapeId): StyleId {
   const root = resolveRootShape(doc, shapeId);
-  return root?.meta.style ?? STYLE_PROFILES.minimal;
+  const style =
+    (root?.meta.pluginData?.[PLUGIN_ROOT_STYLE] as StyleId | undefined) ??
+    (root?.meta.style as StyleId | undefined);
+  return style ?? STYLE_PROFILES.minimal;
 }
 
 /**

@@ -1,20 +1,15 @@
 // Hierarchical semantic tree walk (ADR-0004 Context, Scope note).
 // Preorder hierarchical traversal: root page -> sections -> contents.
 // Provides the pure traversal seam consumed by future Markdown exporters.
-import {
-  isRootId,
-  childrenOf,
-  type DeviceType,
-  type Document,
-  type Shape,
-  type ShapeId,
-} from "@open-draw/canvas";
+import { isRootId, childrenOf, type Document, type Shape, type ShapeId } from "@open-draw/canvas";
 import {
   PLATFORM_PROFILES,
+  type DeviceType,
   type PlatformId,
   type PlatformProfile,
   type SemanticConflict,
 } from "@open-draw/profiles";
+import { getShapeOrder } from "./plugins";
 import { computeSemanticConflict } from "./compute-conflict";
 import { resolveShapeDisplayName, resolveShapeSemanticType } from "./display-name";
 import { resolveRootShape } from "./resolve-root";
@@ -100,8 +95,8 @@ export function walkSemanticTree(
 
     if (activeDevice !== undefined) {
       children.sort((a, b) => {
-        const orderA = a.meta.order?.[activeDevice] ?? 0;
-        const orderB = b.meta.order?.[activeDevice] ?? 0;
+        const orderA = getShapeOrder(a, activeDevice) ?? 0;
+        const orderB = getShapeOrder(b, activeDevice) ?? 0;
         return orderA - orderB;
       });
     }

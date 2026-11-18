@@ -1,12 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import {
-  SHAPE_KINDS,
-  type BoundingBox,
-  type DeviceType,
-  type FillStyle,
-  type Shape,
-} from "@open-draw/canvas";
-import type { PlatformProfile } from "@open-draw/profiles";
+import { SHAPE_KINDS, type BoundingBox, type FillStyle, type Shape } from "@open-draw/canvas";
+import type { DeviceType, PlatformProfile } from "@open-draw/profiles";
 import type { SemanticConflict, SemanticDefinition } from "@open-draw/semantics";
 import { resolveShapeDisplayName } from "@open-draw/semantics";
 import { OdCard, OdField } from "@open-draw/ui";
@@ -67,7 +61,6 @@ export interface ShapeInspectorProps {
 export function ShapeInspector(props: ShapeInspectorProps): React.JSX.Element {
   const {
     selectedShape,
-    rootShape,
     activeProfile,
     conflict,
     semanticDef,
@@ -150,13 +143,6 @@ export function ShapeInspector(props: ShapeInspectorProps): React.JSX.Element {
             }}
           />
         </OdField>
-
-        <span className="od-meta">
-          Container:{" "}
-          {rootShape
-            ? `${resolveShapeDisplayName(rootShape, activeProfile)} (${rootShape.id})`
-            : "Canvas"}
-        </span>
       </OdCard>
 
       {/* 2. GEOMETRY */}

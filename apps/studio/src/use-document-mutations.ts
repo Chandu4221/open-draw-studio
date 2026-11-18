@@ -1,13 +1,23 @@
-import type { DeviceType, Command, FillStyle, Shape } from "@open-draw/canvas";
+import type { Command, FillStyle, Shape } from "@open-draw/canvas";
 import { COMMANDS, isRootId } from "@open-draw/canvas";
-import type { DesignStyleId, PlatformId, PlatformProfile, StyleId } from "@open-draw/profiles";
-import { PLATFORMS, PLATFORM_PROFILES } from "@open-draw/profiles";
+import type {
+  DesignStyleId,
+  DeviceType,
+  PlatformId,
+  PlatformProfile,
+  StyleId,
+} from "@open-draw/profiles";
+import { PLATFORM_PROFILES } from "@open-draw/profiles";
 import {
   PLUGIN_DESIGN_STYLE,
+  PLUGIN_RESPONSIVE,
   PLUGIN_ROOT_PLATFORM,
   PLUGIN_ROOT_ROLE,
+  PLUGIN_ROOT_STYLE,
   PLUGIN_SEMANTICS,
+  getShapeHiddenOn,
   getShapeSemantic,
+  type ResponsivePluginData,
   type RootRole,
 } from "@open-draw/semantics";
 
@@ -68,15 +78,7 @@ export interface DocumentMutations {
 }
 
 export function useDocumentMutations(props: DocumentMutationsProps): DocumentMutations {
-  const {
-    selectedShape,
-    rootShape,
-    activeProfile,
-    activeDeviceType,
-    setActiveDeviceType,
-    commit,
-    render,
-  } = props;
+  const { selectedShape, rootShape, activeDeviceType, setActiveDeviceType, commit, render } = props;
 
   function handleSetPlatform(platform: PlatformId | ""): void {
     const targetRoot =
@@ -126,7 +128,14 @@ export function useDocumentMutations(props: DocumentMutationsProps): DocumentMut
     const targetRoot =
       selectedShape && isRootId(selectedShape.parentId) ? selectedShape : rootShape;
     if (!targetRoot) return;
-    commit([{ type: COMMANDS.setRootStyle, id: targetRoot.id, style }]);
+    commit([
+      {
+        type: COMMANDS.setShapePluginData,
+        id: targetRoot.id,
+        pluginId: PLUGIN_ROOT_STYLE,
+        data: style,
+      },
+    ]);
     render();
   }
 
@@ -208,21 +217,12 @@ export function useDocumentMutations(props: DocumentMutationsProps): DocumentMut
         },
       ]);
     } else {
-      let platform = activeProfile?.id ?? PLATFORMS.web;
-      if (activeProfile && !activeProfile.semantics[semanticIdStr]) {
-        for (const [pid, prof] of Object.entries(PLATFORM_PROFILES)) {
-          if (prof.semantics[semanticIdStr]) {
-            platform = pid as PlatformId;
-            break;
-          }
-        }
-      }
       commit([
         {
           type: COMMANDS.setShapePluginData,
           id: selectedShape.id,
           pluginId: PLUGIN_SEMANTICS,
-          data: { id: semanticIdStr, platform },
+          data: { id: semanticIdStr },
         },
       ]);
     }
@@ -246,13 +246,27 @@ export function useDocumentMutations(props: DocumentMutationsProps): DocumentMut
 
   function handleToggleHiddenOn(dt: DeviceType): void {
     if (!selectedShape) return;
-    const current = selectedShape.meta.hiddenOn ?? [];
-    const next = current.includes(dt) ? current.filter((d) => d !== dt) : [...current, dt];
+    const currentResponsive =
+      (selectedShape.meta.pluginData?.[PLUGIN_RESPONSIVE] as ResponsivePluginData | undefined) ??
+      {};
+    const currentHiddenOn = getShapeHiddenOn(selectedShape) ?? [];
+    const nextHiddenOn = currentHiddenOn.includes(dt)
+      ? currentHiddenOn.filter((d) => d !== dt)
+      : [...currentHiddenOn, dt];
+    const nextResponsive: ResponsivePluginData = {
+      ...(currentResponsive.order !== undefined ? { order: currentResponsive.order } : {}),
+      ...(nextHiddenOn.length > 0 ? { hiddenOn: nextHiddenOn } : {}),
+    };
+    const hasData =
+      (nextResponsive.hiddenOn !== undefined && nextResponsive.hiddenOn.length > 0) ||
+      (nextResponsive.order !== undefined && Object.keys(nextResponsive.order).length > 0);
+
     commit([
       {
-        type: COMMANDS.setShapeHiddenOn,
+        type: COMMANDS.setShapePluginData,
         id: selectedShape.id,
-        hiddenOn: next.length > 0 ? next : null,
+        pluginId: PLUGIN_RESPONSIVE,
+        data: hasData ? nextResponsive : null,
       },
     ]);
     render();
@@ -260,15 +274,39 @@ export function useDocumentMutations(props: DocumentMutationsProps): DocumentMut
 
   function handleOrderChange(dt: DeviceType, valStr: string): void {
     if (!selectedShape) return;
+    const currentResponsive =
+      (selectedShape.meta.pluginData?.[PLUGIN_RESPONSIVE] as ResponsivePluginData | undefined) ??
+      {};
+    const currentOrder: Record<string, number> = {
+      ...((selectedShape.meta as { order?: Readonly<Record<string, number>> }).order ?? {}),
+      ...(currentResponsive.order ?? {}),
+    };
+
     const trimmed = valStr.trim();
     if (trimmed.length === 0) {
-      commit([{ type: COMMANDS.setShapeOrder, id: selectedShape.id, deviceType: dt, order: null }]);
-      render();
-      return;
+      delete currentOrder[dt];
+    } else {
+      const order = Number(trimmed);
+      if (!Number.isFinite(order)) return;
+      currentOrder[dt] = order;
     }
-    const order = Number(trimmed);
-    if (!Number.isFinite(order)) return;
-    commit([{ type: COMMANDS.setShapeOrder, id: selectedShape.id, deviceType: dt, order }]);
+
+    const nextResponsive: ResponsivePluginData = {
+      ...(currentResponsive.hiddenOn !== undefined ? { hiddenOn: currentResponsive.hiddenOn } : {}),
+      ...(Object.keys(currentOrder).length > 0 ? { order: currentOrder } : {}),
+    };
+    const hasData =
+      (nextResponsive.hiddenOn !== undefined && nextResponsive.hiddenOn.length > 0) ||
+      (nextResponsive.order !== undefined && Object.keys(nextResponsive.order).length > 0);
+
+    commit([
+      {
+        type: COMMANDS.setShapePluginData,
+        id: selectedShape.id,
+        pluginId: PLUGIN_RESPONSIVE,
+        data: hasData ? nextResponsive : null,
+      },
+    ]);
     render();
   }
 

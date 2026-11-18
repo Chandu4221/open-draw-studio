@@ -6,7 +6,8 @@ import React, {
   useState,
   useSyncExternalStore,
 } from "react";
-import type { DeviceType, ShapeId } from "@open-draw/canvas";
+import type { ShapeId } from "@open-draw/canvas";
+import type { DeviceType } from "@open-draw/profiles";
 import type { Command, Shape } from "@open-draw/canvas";
 import {
   CONTROLLER_EVENTS,
@@ -53,6 +54,7 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
   const {
     initialRootIds,
     visibleChipRoots,
+    visibleChipRootsRef,
     handleToggleChildChips,
     interceptPointerDown,
     syncVisibleChipRoots,
@@ -77,7 +79,7 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
           return;
         }
         saveDraftDocument(curDoc);
-        syncVisibleChipRoots(curDoc, editor.canvas);
+        syncVisibleChipRoots(curDoc);
         onStoreChange();
       });
     },
@@ -117,16 +119,14 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
       tool: TOOLS.select,
       nestingMode: "containers-only",
       customRenderers: createStudioCustomRenderers(),
-      canvasOptions: {
-        visibleChipRootIds: initialRootIds,
-      },
+      canvasOptions: {},
       onFallback: (msg) => toastRef.current.push({ type: "info", text: msg }),
       renderCustomOverlays: (ctx) =>
         computeSemanticChipOverlays({
           doc: ctx.doc,
           selectedIds: ctx.selectedIds,
           zoom: ctx.zoom,
-          visibleChipRootIds: ctx.canvas.getVisibleChipRootIds(),
+          visibleChipRootIds: visibleChipRootsRef.current,
           hoveredShapeId: hoveredShapeIdRef.current,
         }),
       interceptPointerDown,
@@ -154,7 +154,7 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
       editorRef.current = null;
       setEditor(null);
     };
-  }, [initialDoc, initialRootIds, interceptPointerDown, hoveredShapeIdRef]);
+  }, [initialDoc, initialRootIds, interceptPointerDown, hoveredShapeIdRef, visibleChipRootsRef]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -190,12 +190,8 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
   };
 
   const handleDeviceChange = (deviceType?: DeviceType): void => {
-    const ed = editorRef.current;
-    if (ed) {
-      ed.canvas.setActiveDeviceType(deviceType);
-      ed.render();
-    }
     setActiveDeviceType(deviceType);
+    editorRef.current?.render();
   };
 
   const handleZoom = (factor: number): void => {
