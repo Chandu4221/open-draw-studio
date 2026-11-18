@@ -1,5 +1,6 @@
 import {
   PLATFORM_PROFILES,
+  type PlatformId,
   type PlatformProfile,
   type SemanticDefinition,
   type SemanticId,
@@ -36,6 +37,25 @@ export function resolveSemantic(
   };
 }
 
+function resolveProfileForTag(
+  tag: SemanticTag,
+  profile?: PlatformProfile,
+): PlatformProfile | undefined {
+  if (profile !== undefined) {
+    return profile;
+  }
+  const tagPlatform = (tag as { platform?: PlatformId }).platform;
+  if (tagPlatform !== undefined) {
+    return PLATFORM_PROFILES[tagPlatform];
+  }
+  for (const prof of Object.values(PLATFORM_PROFILES)) {
+    if (prof.semantics[tag.id] !== undefined) {
+      return prof;
+    }
+  }
+  return undefined;
+}
+
 /**
  * Checks whether a semantic tag has scope === "section" in its platform profile.
  */
@@ -43,10 +63,10 @@ export function isSectionScopedSemantic(
   tag: SemanticTag | undefined | null,
   profile?: PlatformProfile,
 ): boolean {
-  if (!tag || !tag.id || !tag.platform) {
+  if (!tag || !tag.id) {
     return false;
   }
-  const targetProfile = profile ?? PLATFORM_PROFILES[tag.platform];
+  const targetProfile = resolveProfileForTag(tag, profile);
   const definition = targetProfile?.semantics[tag.id];
   return definition?.scope === "section";
 }
@@ -58,10 +78,10 @@ export function isComponentScopedSemantic(
   tag: SemanticTag | undefined | null,
   profile?: PlatformProfile,
 ): boolean {
-  if (!tag || !tag.id || !tag.platform) {
+  if (!tag || !tag.id) {
     return false;
   }
-  const targetProfile = profile ?? PLATFORM_PROFILES[tag.platform];
+  const targetProfile = resolveProfileForTag(tag, profile);
   const definition = targetProfile?.semantics[tag.id];
   return definition?.scope === "component";
 }
@@ -74,10 +94,10 @@ export function isContainerSemantic(
   tag: SemanticTag | undefined | null,
   profile?: PlatformProfile,
 ): boolean {
-  if (!tag || !tag.id || !tag.platform) {
+  if (!tag || !tag.id) {
     return false;
   }
-  const targetProfile = profile ?? PLATFORM_PROFILES[tag.platform];
+  const targetProfile = resolveProfileForTag(tag, profile);
   const definition = targetProfile?.semantics[tag.id];
   if (definition === undefined) {
     return false;

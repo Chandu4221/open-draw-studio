@@ -8,6 +8,11 @@ import type { Shape } from "@open-draw/canvas";
 import { WEB_PROFILE } from "@open-draw/profiles";
 import type { SemanticTreeNode } from "@open-draw/semantics";
 import { ContainerInspector } from "./components/ContainerInspector";
+import {
+  computeContainerIds,
+  filterVisibleTreeNodes,
+  findAncestorIds,
+} from "./components/tree-outline-helpers";
 import { TreeOutline } from "./components/TreeOutline";
 
 describe("TreeOutline", () => {
@@ -353,6 +358,205 @@ describe("TreeOutline", () => {
       />,
     );
     expect(htmlSelected).not.toContain("od-tree-item--hovered");
+  });
+
+  it("filters visible tree nodes when a container is collapsed (Figma collapse model)", () => {
+    const rootShape: Shape = {
+      id: parseShapeId("root-1"),
+      parentId: ROOT_ID,
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 0, y: 0, width: 800, height: 600 },
+      label: "Landing Page",
+      meta: { order: {} },
+    };
+    const section1: Shape = {
+      id: parseShapeId("sec-1"),
+      parentId: parseShapeId("root-1"),
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 10, y: 10, width: 300, height: 200 },
+      label: "Navbar",
+      meta: { order: {} },
+    };
+    const button1: Shape = {
+      id: parseShapeId("btn-1"),
+      parentId: parseShapeId("sec-1"),
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 20, y: 20, width: 100, height: 40 },
+      label: "Login Button",
+      meta: { order: {} },
+    };
+    const section2: Shape = {
+      id: parseShapeId("sec-2"),
+      parentId: parseShapeId("root-1"),
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 10, y: 220, width: 300, height: 200 },
+      label: "Hero Section",
+      meta: { order: {} },
+    };
+
+    const treeNodes: SemanticTreeNode[] = [
+      { shape: rootShape, depth: 0, displayName: "Landing Page" },
+      { shape: section1, depth: 1, displayName: "Navbar" },
+      { shape: button1, depth: 2, displayName: "Login Button" },
+      { shape: section2, depth: 1, displayName: "Hero Section" },
+    ];
+
+    // Compute containers
+    const containers = computeContainerIds(treeNodes);
+    expect(containers.has(rootShape.id)).toBe(true);
+    expect(containers.has(section1.id)).toBe(true);
+    expect(containers.has(button1.id)).toBe(false);
+
+    // Compute ancestors
+    const ancestors = findAncestorIds(treeNodes, button1.id);
+    expect(ancestors.has(section1.id)).toBe(true);
+    expect(ancestors.has(rootShape.id)).toBe(true);
+
+    // When sec-1 is collapsed, btn-1 (depth 2) is hidden, but sec-2 (depth 1) remains visible
+    const filtered = filterVisibleTreeNodes(treeNodes, new Set([section1.id]));
+    expect(filtered.map((n) => n.shape.id)).toEqual([rootShape.id, section1.id, section2.id]);
+
+    // When root-1 is collapsed, all nested nodes are hidden
+    const rootCollapsed = filterVisibleTreeNodes(treeNodes, new Set([rootShape.id]));
+    expect(rootCollapsed.map((n) => n.shape.id)).toEqual([rootShape.id]);
+  });
+
+  it("renders collapsed chevron class and hides collapsed children in DOM", () => {
+    const rootShape: Shape = {
+      id: parseShapeId("root-1"),
+      parentId: ROOT_ID,
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 0, y: 0, width: 800, height: 600 },
+      label: "Landing Page",
+      meta: { order: {} },
+    };
+    const section1: Shape = {
+      id: parseShapeId("sec-1"),
+      parentId: parseShapeId("root-1"),
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 10, y: 10, width: 300, height: 200 },
+      label: "Navbar",
+      meta: { order: {} },
+    };
+    const button1: Shape = {
+      id: parseShapeId("btn-1"),
+      parentId: parseShapeId("sec-1"),
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 20, y: 20, width: 100, height: 40 },
+      label: "Login Button",
+      meta: { order: {} },
+    };
+
+    const treeNodes: SemanticTreeNode[] = [
+      { shape: rootShape, depth: 0, displayName: "Landing Page" },
+      { shape: section1, depth: 1, displayName: "Navbar" },
+      { shape: button1, depth: 2, displayName: "Login Button" },
+    ];
+
+    // Expanded render: button1 is rendered
+    const expandedHtml = renderToString(
+      <TreeOutline
+        treeNodes={treeNodes}
+        selectedShapeId={null}
+        selectShape={vi.fn()}
+        collapsedIds={new Set()}
+      />,
+    );
+    expect(expandedHtml).toContain("Login Button");
+    expect(expandedHtml).not.toContain("od-tree-chevron--collapsed");
+    expect(expandedHtml).toContain('aria-expanded="true"');
+
+    // Collapsed render: sec-1 is collapsed -> button1 is omitted from HTML, chevron has collapsed class
+    const collapsedHtml = renderToString(
+      <TreeOutline
+        treeNodes={treeNodes}
+        selectedShapeId={null}
+        selectShape={vi.fn()}
+        collapsedIds={new Set([section1.id])}
+      />,
+    );
+    expect(collapsedHtml).not.toContain("Login Button");
+    expect(collapsedHtml).toContain("od-tree-chevron--collapsed");
+    expect(collapsedHtml).toContain('aria-expanded="false"');
+    expect(collapsedHtml).toContain('aria-label="Expand Navbar"');
+  });
+
+  it("resolves multi-level ancestors and hides deep subtrees when an intermediate container is collapsed", () => {
+    const rootShape: Shape = {
+      id: parseShapeId("root-1"),
+      parentId: ROOT_ID,
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 0, y: 0, width: 800, height: 600 },
+      label: "Landing Page",
+      meta: { order: {} },
+    };
+    const section1: Shape = {
+      id: parseShapeId("sec-1"),
+      parentId: parseShapeId("root-1"),
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 10, y: 10, width: 300, height: 200 },
+      label: "Content Section",
+      meta: { order: {} },
+    };
+    const card1: Shape = {
+      id: parseShapeId("card-1"),
+      parentId: parseShapeId("sec-1"),
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 20, y: 20, width: 200, height: 100 },
+      label: "Feature Card",
+      meta: { order: {} },
+    };
+    const btn1: Shape = {
+      id: parseShapeId("btn-1"),
+      parentId: parseShapeId("card-1"),
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 30, y: 30, width: 80, height: 32 },
+      label: "CTA Button",
+      meta: { order: {} },
+    };
+    const section2: Shape = {
+      id: parseShapeId("sec-2"),
+      parentId: parseShapeId("root-1"),
+      kind: SHAPE_KINDS.rect,
+      boundingBox: { x: 10, y: 350, width: 300, height: 200 },
+      label: "Footer Section",
+      meta: { order: {} },
+    };
+
+    const treeNodes: SemanticTreeNode[] = [
+      { shape: rootShape, depth: 0, displayName: "Landing Page" },
+      { shape: section1, depth: 1, displayName: "Content Section" },
+      { shape: card1, depth: 2, displayName: "Feature Card" },
+      { shape: btn1, depth: 3, displayName: "CTA Button" },
+      { shape: section2, depth: 1, displayName: "Footer Section" },
+    ];
+
+    // Ancestor resolution
+    expect(Array.from(findAncestorIds(treeNodes, btn1.id))).toEqual([
+      card1.id,
+      section1.id,
+      rootShape.id,
+    ]);
+    expect(Array.from(findAncestorIds(treeNodes, card1.id))).toEqual([section1.id, rootShape.id]);
+    expect(Array.from(findAncestorIds(treeNodes, section1.id))).toEqual([rootShape.id]);
+    expect(Array.from(findAncestorIds(treeNodes, rootShape.id))).toEqual([]);
+
+    // Collapsing card1 hides btn1, but keeps section1, card1, and section2 visible
+    const cardCollapsed = filterVisibleTreeNodes(treeNodes, new Set([card1.id]));
+    expect(cardCollapsed.map((n) => n.shape.id)).toEqual([
+      rootShape.id,
+      section1.id,
+      card1.id,
+      section2.id,
+    ]);
+
+    // Collapsing section1 hides both card1 and btn1, keeping section1 and section2 visible
+    const sectionCollapsed = filterVisibleTreeNodes(treeNodes, new Set([section1.id]));
+    expect(sectionCollapsed.map((n) => n.shape.id)).toEqual([
+      rootShape.id,
+      section1.id,
+      section2.id,
+    ]);
   });
 });
 

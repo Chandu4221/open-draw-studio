@@ -23,7 +23,6 @@ export function parseSemanticId(value: string): SemanticId {
 
 export interface SemanticTag {
   readonly id: string;
-  readonly platform: PlatformId;
   readonly properties?: Readonly<Record<string, string | number | boolean>>;
 }
 

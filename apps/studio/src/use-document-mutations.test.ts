@@ -189,7 +189,7 @@ describe("useDocumentMutations", () => {
         type: COMMANDS.setShapePluginData,
         id: "s-1",
         pluginId: PLUGIN_SEMANTICS,
-        data: { id: "button", platform: PLATFORMS.web },
+        data: { id: "button" },
       },
     ]);
 

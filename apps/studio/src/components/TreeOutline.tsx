@@ -1,36 +1,20 @@
+import React, { useMemo, useState } from "react";
 import {
   isRootId,
   SHAPE_KIND_LABELS,
   type BuiltinShapeKind,
   type ShapeId,
 } from "@open-draw/canvas";
-import { resolveShapeSemanticType, type walkSemanticTree } from "@open-draw/semantics";
-import { OdBadge } from "@open-draw/ui";
+import { resolveShapeSemanticType } from "@open-draw/semantics";
+import { OdBadge, OdIcon } from "@open-draw/ui";
 
-type TreeNodes = ReturnType<typeof walkSemanticTree>;
-type TreeNode = TreeNodes[number];
-
-function determineDotCategory(
-  node: TreeNode,
-): "conflict" | "container" | "interactive" | "content" | "primitive" {
-  if (node.conflict !== undefined) {
-    return "conflict";
-  }
-  if (isRootId(node.shape.parentId)) {
-    return "container";
-  }
-  const category = node.semantic?.definition?.category;
-  if (category === "layout") {
-    return "container";
-  }
-  if (category === "interactive" || category === "forms" || category === "navigation") {
-    return "interactive";
-  }
-  if (category === "content" || category === "feedback") {
-    return "content";
-  }
-  return "primitive";
-}
+import {
+  computeContainerIds,
+  determineDotCategory,
+  filterVisibleTreeNodes,
+  findAncestorIds,
+  type TreeNodes,
+} from "./tree-outline-helpers";
 
 export interface TreeOutlineProps {
   readonly treeNodes: TreeNodes;
@@ -42,6 +26,8 @@ export interface TreeOutlineProps {
   readonly onClearScope?: (() => void) | undefined;
   readonly hoveredShapeId?: ShapeId | null | undefined;
   readonly onHoverShape?: ((id: ShapeId | null) => void) | undefined;
+  readonly collapsedIds?: ReadonlySet<ShapeId> | undefined;
+  readonly onToggleCollapse?: ((id: ShapeId) => void) | undefined;
 }
 
 export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
@@ -55,47 +41,61 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
     onClearScope,
     hoveredShapeId,
     onHoverShape,
+    collapsedIds: controlledCollapsedIds,
+    onToggleCollapse,
   } = props;
 
+  const [internalCollapsedIds, setInternalCollapsedIds] = useState<ReadonlySet<ShapeId>>(
+    () => new Set(),
+  );
+  const [prevSelectedId, setPrevSelectedId] = useState<ShapeId | null>(selectedShapeId);
+
+  let activeInternalCollapsed = internalCollapsedIds;
+  if (selectedShapeId !== prevSelectedId) {
+    setPrevSelectedId(selectedShapeId);
+    if (selectedShapeId) {
+      const ancestors = findAncestorIds(treeNodes, selectedShapeId);
+      const hasCollapsed = [...ancestors].some((a) => internalCollapsedIds.has(a));
+      if (hasCollapsed) {
+        const next = new Set(internalCollapsedIds);
+        ancestors.forEach((a) => next.delete(a));
+        activeInternalCollapsed = next;
+        setInternalCollapsedIds(next);
+      }
+    }
+  }
+
+  const collapsedIds = controlledCollapsedIds ?? activeInternalCollapsed;
+  const containerIds = useMemo(() => computeContainerIds(treeNodes), [treeNodes]);
+
+  const toggleCollapse = (id: ShapeId) => {
+    if (onToggleCollapse) {
+      onToggleCollapse(id);
+    } else {
+      setInternalCollapsedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+    }
+  };
+
+  const visibleNodes = useMemo(
+    () => filterVisibleTreeNodes(treeNodes, collapsedIds),
+    [treeNodes, collapsedIds],
+  );
+
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        width: "100%",
-        minHeight: 0,
-        boxSizing: "border-box",
-      }}
-    >
+    <div className="od-tree-container">
       {showHeader && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "var(--od-8) var(--od-16)",
-            borderBottom: "var(--od-border-width) solid var(--od-border)",
-            flexShrink: 0,
-          }}
-        >
+        <div className="od-tree-header">
           <span className="od-section-header">LAYERS</span>
           <OdBadge>{treeNodes.length}</OdBadge>
         </div>
       )}
       {isScopedToRoot && activeRootTitle && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "var(--od-4) var(--od-8)",
-            backgroundColor: "var(--od-bg)",
-            borderBottom: "var(--od-border-width) solid var(--od-border)",
-            fontSize: "var(--od-text-xs)",
-            flexShrink: 0,
-          }}
-        >
+        <div className="od-tree-scope-banner">
           <div style={{ display: "flex", alignItems: "center", gap: "var(--od-4)", minWidth: 0 }}>
             <span style={{ color: "var(--od-text-secondary)", flexShrink: 0 }}>Scope:</span>
             <span
@@ -114,12 +114,7 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
             <button
               type="button"
               className="od-btn od-btn--ghost"
-              style={{
-                height: "20px",
-                padding: "0 var(--od-4)",
-                fontSize: "10px",
-                flexShrink: 0,
-              }}
+              style={{ height: "20px", padding: "0 var(--od-4)", fontSize: "10px", flexShrink: 0 }}
               onClick={onClearScope}
               title="Show all screens on canvas"
             >
@@ -128,20 +123,13 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
           )}
         </div>
       )}
-      <div
-        style={{
-          flex: "1 1 auto",
-          minHeight: 0,
-          overflowY: "auto",
-          padding: "var(--od-4) var(--od-8)",
-        }}
-      >
-        {treeNodes.length === 0 ? (
+      <div className="od-tree-scroll">
+        {visibleNodes.length === 0 ? (
           <div className="od-empty" style={{ padding: "var(--od-16)" }}>
             <span>No layers</span>
           </div>
         ) : (
-          treeNodes.map((node, index) => {
+          visibleNodes.map((node) => {
             const isSelected = node.shape.id === selectedShapeId;
             const isHovered = !isSelected && node.shape.id === hoveredShapeId;
             const itemName =
@@ -152,10 +140,8 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
               node.semanticType ??
               node.semantic?.displayName ??
               (isRootId(node.shape.parentId) ? resolveShapeSemanticType(node.shape) : undefined);
-            const nextNode = treeNodes[index + 1];
-            const isContainer =
-              isRootId(node.shape.parentId) ||
-              (nextNode !== undefined && nextNode.depth > node.depth);
+            const isContainer = containerIds.has(node.shape.id);
+            const isCollapsed = collapsedIds.has(node.shape.id);
             const dotCategory = determineDotCategory(node);
 
             return (
@@ -164,20 +150,9 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
                 role="button"
                 tabIndex={0}
                 aria-pressed={isSelected}
+                aria-expanded={isContainer ? !isCollapsed : undefined}
                 aria-label={`Select layer ${itemName}`}
                 className={`od-tree-item${isHovered ? " od-tree-item--hovered" : ""}`}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "var(--od-8)",
-                  paddingLeft: "var(--od-4)",
-                  paddingTop: "var(--od-2)",
-                  paddingBottom: "var(--od-2)",
-                  paddingRight: "var(--od-4)",
-                  backgroundColor: isSelected ? "var(--od-accent-soft)" : "transparent",
-                  color: isSelected ? "var(--od-accent)" : "var(--od-text)",
-                }}
                 onClick={() => selectShape(node.shape.id)}
                 onPointerEnter={() => onHoverShape?.(node.shape.id)}
                 onPointerLeave={() => onHoverShape?.(null)}
@@ -185,6 +160,12 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     selectShape(node.shape.id);
+                  } else if (e.key === "ArrowLeft" && isContainer && !isCollapsed) {
+                    e.preventDefault();
+                    toggleCollapse(node.shape.id);
+                  } else if (e.key === "ArrowRight" && isContainer && isCollapsed) {
+                    e.preventDefault();
+                    toggleCollapse(node.shape.id);
                   }
                 }}
               >
@@ -196,27 +177,78 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
                       aria-hidden="true"
                     />
                   )}
-                  {isContainer && <span className="od-tree-chevron" aria-hidden="true" />}
+                  {isContainer && (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      className={`od-tree-chevron${isCollapsed ? " od-tree-chevron--collapsed" : ""}`}
+                      aria-label={isCollapsed ? `Expand ${itemName}` : `Collapse ${itemName}`}
+                      aria-expanded={!isCollapsed}
+                      title={isCollapsed ? `Expand ${itemName}` : `Collapse ${itemName}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleCollapse(node.shape.id);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleCollapse(node.shape.id);
+                        }
+                      }}
+                    >
+                      <OdIcon name="chevron" size={12} />
+                    </span>
+                  )}
                   <span className={`od-tree-dot od-tree-dot--${dotCategory}`} aria-hidden="true" />
                   <span className="od-tree-item__label">{itemName}</span>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "var(--od-4)",
-                    flexShrink: 0,
-                  }}
-                >
+                <div className="od-tree-item__right">
                   {semanticChip && (
                     <OdBadge
                       variant="outline"
+                      role={isContainer ? "button" : undefined}
+                      tabIndex={isContainer ? 0 : undefined}
+                      aria-label={
+                        isContainer
+                          ? isCollapsed
+                            ? `Expand ${itemName}`
+                            : `Collapse ${itemName}`
+                          : undefined
+                      }
+                      title={
+                        isContainer
+                          ? isCollapsed
+                            ? `Click to expand ${itemName}`
+                            : `Click to collapse ${itemName}`
+                          : undefined
+                      }
+                      className={isContainer ? "od-tree-chip--container" : undefined}
                       style={{
                         fontSize: "11px",
                         height: "18px",
                         padding: "0 6px",
                         fontWeight: 500,
                       }}
+                      onClick={
+                        isContainer
+                          ? (e) => {
+                              e.stopPropagation();
+                              toggleCollapse(node.shape.id);
+                            }
+                          : undefined
+                      }
+                      onKeyDown={
+                        isContainer
+                          ? (e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                toggleCollapse(node.shape.id);
+                              }
+                            }
+                          : undefined
+                      }
                     >
                       {semanticChip}
                     </OdBadge>

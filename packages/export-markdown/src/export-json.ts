@@ -236,8 +236,11 @@ export function exportJson(doc: Document, options?: JsonExportOptions): string {
     if (shapeSemantic !== undefined) {
       const semantic: Record<string, unknown> = {
         id: shapeSemantic.id,
-        platform: PLATFORMS[shapeSemantic.platform] ?? shapeSemantic.platform,
       };
+      const rawPlatform = (shapeSemantic as { platform?: PlatformId }).platform;
+      if (rawPlatform !== undefined) {
+        semantic.platform = PLATFORMS[rawPlatform] ?? rawPlatform;
+      }
       if (shapeSemantic.properties !== undefined) {
         semantic.properties = shapeSemantic.properties;
       }

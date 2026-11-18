@@ -61,7 +61,6 @@ export interface ShapeInspectorProps {
 export function ShapeInspector(props: ShapeInspectorProps): React.JSX.Element {
   const {
     selectedShape,
-    rootShape,
     activeProfile,
     conflict,
     semanticDef,
@@ -144,13 +143,6 @@ export function ShapeInspector(props: ShapeInspectorProps): React.JSX.Element {
             }}
           />
         </OdField>
-
-        <span className="od-meta">
-          Container:{" "}
-          {rootShape
-            ? `${resolveShapeDisplayName(rootShape, activeProfile)} (${rootShape.id})`
-            : "Canvas"}
-        </span>
       </OdCard>
 
       {/* 2. GEOMETRY */}

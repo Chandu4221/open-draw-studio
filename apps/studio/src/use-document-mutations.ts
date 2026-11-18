@@ -7,7 +7,7 @@ import type {
   PlatformProfile,
   StyleId,
 } from "@open-draw/profiles";
-import { PLATFORMS, PLATFORM_PROFILES } from "@open-draw/profiles";
+import { PLATFORM_PROFILES } from "@open-draw/profiles";
 import {
   PLUGIN_DESIGN_STYLE,
   PLUGIN_RESPONSIVE,
@@ -78,15 +78,7 @@ export interface DocumentMutations {
 }
 
 export function useDocumentMutations(props: DocumentMutationsProps): DocumentMutations {
-  const {
-    selectedShape,
-    rootShape,
-    activeProfile,
-    activeDeviceType,
-    setActiveDeviceType,
-    commit,
-    render,
-  } = props;
+  const { selectedShape, rootShape, activeDeviceType, setActiveDeviceType, commit, render } = props;
 
   function handleSetPlatform(platform: PlatformId | ""): void {
     const targetRoot =
@@ -225,21 +217,12 @@ export function useDocumentMutations(props: DocumentMutationsProps): DocumentMut
         },
       ]);
     } else {
-      let platform = activeProfile?.id ?? PLATFORMS.web;
-      if (activeProfile && !activeProfile.semantics[semanticIdStr]) {
-        for (const [pid, prof] of Object.entries(PLATFORM_PROFILES)) {
-          if (prof.semantics[semanticIdStr]) {
-            platform = pid as PlatformId;
-            break;
-          }
-        }
-      }
       commit([
         {
           type: COMMANDS.setShapePluginData,
           id: selectedShape.id,
           pluginId: PLUGIN_SEMANTICS,
-          data: { id: semanticIdStr, platform },
+          data: { id: semanticIdStr },
         },
       ]);
     }

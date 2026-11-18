@@ -69,9 +69,9 @@ describe("useInspectionData", () => {
     const childShape = createMockShape("child-1", "root-1" as ShapeId, {
       order: {},
       semantic: {
-        id: "segmented-control",
+        id: "navigation-bar",
         platform: PLATFORMS.ios,
-        properties: { selectedIndex: 0 },
+        properties: { translucent: true },
       },
     });
     const doc: Document = {
@@ -87,7 +87,7 @@ describe("useInspectionData", () => {
     expect(result.selectedShape).toBe(childShape);
     expect(result.rootShape).toBe(rootShape);
     expect(result.rootPlatform).toBe(PLATFORMS.web);
-    expect(result.semanticProps).toEqual({ selectedIndex: 0 });
+    expect(result.semanticProps).toEqual({ translucent: true });
     // Conflict should be detected because child platform (ios) !== rootPlatform (web)
     expect(result.conflict).toBeDefined();
     expect(result.conflict?.status).toBe(SEMANTIC_CONFLICTS.conflicted);
