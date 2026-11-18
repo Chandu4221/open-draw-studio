@@ -18,13 +18,17 @@ import {
   STYLE_PROFILES,
   SEMANTICS_REGISTRY_VERSION,
   buildChildIndex,
+  getShapeHiddenOn,
+  getShapeOrder,
   getShapeSemantic,
   PLUGIN_DARK_MODE,
   PLUGIN_ROOT_PLATFORM,
   PLUGIN_ROOT_ROLE,
+  PLUGIN_ROOT_STYLE,
   PLUGIN_THEME,
   type PlatformId,
   type RootRole,
+  type StyleId,
   type ThemePalette,
 } from "@open-draw/semantics";
 import { compileAiDirectives } from "./ai-directives";
@@ -99,7 +103,9 @@ function getExportedShapes(doc: Document, options?: JsonExportOptions): readonly
     const walk = (parentId: ShapeId): void => {
       const children = [...(childIndex.get(parentId) ?? [])];
       if (deviceType !== undefined) {
-        children.sort((a, b) => (a.meta.order[deviceType] ?? 0) - (b.meta.order[deviceType] ?? 0));
+        children.sort(
+          (a, b) => (getShapeOrder(a, deviceType) ?? 0) - (getShapeOrder(b, deviceType) ?? 0),
+        );
       }
       for (const child of children) {
         result.push(child);
@@ -118,7 +124,9 @@ function getExportedShapes(doc: Document, options?: JsonExportOptions): readonly
   const result: Shape[] = [];
   const walk = (parentId: ShapeId): void => {
     const children = [...(childIndex.get(parentId) ?? [])];
-    children.sort((a, b) => (a.meta.order[deviceType] ?? 0) - (b.meta.order[deviceType] ?? 0));
+    children.sort(
+      (a, b) => (getShapeOrder(a, deviceType) ?? 0) - (getShapeOrder(b, deviceType) ?? 0),
+    );
     for (const child of children) {
       result.push(child);
       walk(child.id);
@@ -193,13 +201,10 @@ export function exportJson(doc: Document, options?: JsonExportOptions): string {
       }
     } else {
       switch (shape.kind) {
-        case SHAPE_KINDS.page:
         case SHAPE_KINDS.rect:
         case SHAPE_KINDS.ellipse:
         case SHAPE_KINDS.text:
-          break;
-        case SHAPE_KINDS.section:
-          shapeRecord.direction = (shape as { direction?: string }).direction;
+        case SHAPE_KINDS.group:
           break;
         case SHAPE_KINDS.line: {
           const line = shape as LineShape;
@@ -247,8 +252,11 @@ export function exportJson(doc: Document, options?: JsonExportOptions): string {
     if (platform !== undefined) {
       meta.platform = PLATFORMS[platform] ?? platform;
     }
-    if (shape.meta.style !== undefined) {
-      meta.style = STYLE_PROFILES[shape.meta.style] ?? shape.meta.style;
+    const style =
+      (shape.meta.pluginData?.[PLUGIN_ROOT_STYLE] as StyleId | undefined) ??
+      (shape.meta.style as StyleId | undefined);
+    if (style !== undefined) {
+      meta.style = STYLE_PROFILES[style] ?? style;
     }
     const role =
       (shape.meta.pluginData?.[PLUGIN_ROOT_ROLE] as RootRole | undefined) ??
@@ -268,12 +276,14 @@ export function exportJson(doc: Document, options?: JsonExportOptions): string {
     if (darkMode !== undefined) {
       meta.darkMode = darkMode;
     }
-    if (shape.meta.hiddenOn !== undefined && shape.meta.hiddenOn.length > 0) {
-      meta.hiddenOn = shape.meta.hiddenOn;
+    const hiddenOn = getShapeHiddenOn(shape);
+    if (hiddenOn !== undefined && hiddenOn.length > 0) {
+      meta.hiddenOn = hiddenOn;
     }
     // A3: Empty order: {} is omitted from export
-    if (shape.meta.order !== undefined && Object.keys(shape.meta.order).length > 0) {
-      meta.order = shape.meta.order;
+    const order = (shape.meta as { order?: Record<string, number> }).order;
+    if (order !== undefined && order !== null && Object.keys(order).length > 0) {
+      meta.order = order;
     }
     if (shape.meta.pluginData !== undefined) {
       meta.pluginData = shape.meta.pluginData;

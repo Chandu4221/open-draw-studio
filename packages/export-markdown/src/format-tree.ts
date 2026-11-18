@@ -1,9 +1,15 @@
 // Pure tree row and on-demand legend formatting (Milestone 11A B1-B3, B5).
 // Pure Document -> string projections, zero side effects (R-008, R-016).
 // Formats exact parent-relative bounding boxes and chip IDs (R-025, R-041, R-042).
-import { type BoundingBox, type DeviceType, DEVICE_TYPES } from "@open-draw/canvas";
-import type { Shape } from "@open-draw/canvas";
-import { SEMANTIC_CONFLICTS, getShapeSemantic, type SemanticTreeNode } from "@open-draw/semantics";
+import type { BoundingBox, Shape } from "@open-draw/canvas";
+import {
+  DEVICE_TYPES,
+  getShapeHiddenOn,
+  getShapeSemantic,
+  SEMANTIC_CONFLICTS,
+  type DeviceType,
+  type SemanticTreeNode,
+} from "@open-draw/semantics";
 import { formatChipId } from "./chip-id";
 import { escapeMarkdownText } from "./escape-markdown";
 
@@ -94,7 +100,7 @@ export function formatTreeRow(node: SemanticTreeNode): string {
   const indent = "  ".repeat(node.depth);
   const chipId = formatChipId(node.shape.id);
   const box = formatBoundingBox(node.shape.boundingBox, `shape ${node.shape.id}`);
-  const hiddenStr = formatHiddenOn(node.shape.meta.hiddenOn);
+  const hiddenStr = formatHiddenOn(getShapeHiddenOn(node.shape));
   const conflictStr = formatConflict(node);
 
   if (node.shape.meta.semantic === undefined) {

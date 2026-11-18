@@ -1,7 +1,8 @@
-import type { DeviceType, Document, Shape, ShapeId } from "@open-draw/canvas";
+import type { Document, Shape, ShapeId } from "@open-draw/canvas";
 import { ROOT_ID } from "@open-draw/canvas";
 import type {
   DesignStyleId,
+  DeviceType,
   PlatformId,
   PlatformProfile,
   StyleId,

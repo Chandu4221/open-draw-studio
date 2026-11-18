@@ -15,9 +15,7 @@
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
-  "dependencies": {
-    "@open-draw/canvas": "^0.9.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "eslint": "^10.13.0",
     "typescript": "~6.0.3",

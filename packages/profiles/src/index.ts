@@ -11,6 +11,7 @@ import { CRAYON_STYLE_PROFILE } from "./styles/crayon";
 
 export * from "./platforms";
 export * from "./design-styles";
+export * from "./device-types";
 export * from "./semantic-contract";
 export * from "./profile-contract";
 

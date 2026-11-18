@@ -1,20 +1,16 @@
 import {
   isRootId,
   type BoundingBox,
-  type DeviceType,
   type FillStyle,
   type ShapeId,
   SHAPE_KINDS,
   type Shape,
 } from "@open-draw/canvas";
 
-const CONTAINER_KINDS: ReadonlySet<string> = new Set([
-  SHAPE_KINDS.page,
-  SHAPE_KINDS.section,
-  SHAPE_KINDS.rect,
-]);
+const CONTAINER_KINDS: ReadonlySet<string> = new Set([SHAPE_KINDS.group, SHAPE_KINDS.rect]);
 import type {
   DesignStyleId,
+  DeviceType,
   PlatformId,
   PlatformProfile,
   StyleId,

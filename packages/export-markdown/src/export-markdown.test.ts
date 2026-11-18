@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { parseShapeId } from "@open-draw/canvas";
+import {
+  parseShapeId,
+  createDocument,
+  createRect,
+  type BoundingBox,
+  type Shape,
+  type ShapeId,
+} from "@open-draw/canvas";
 import {
   type PlatformId,
   type StyleId,
@@ -9,7 +16,30 @@ import {
   PLATFORMS,
   STYLE_PROFILES,
 } from "@open-draw/semantics";
-import { createDocument, createRect, createSection, createPage } from "@open-draw/canvas";
+
+function createPage(
+  id: ShapeId,
+  box: BoundingBox,
+  options?: Parameters<typeof createRect>[2],
+): Shape {
+  return createRect(id, box, {
+    ...options,
+    meta: { isContainer: true, ...options?.meta },
+  });
+}
+
+function createSection(
+  id: ShapeId,
+  box: BoundingBox,
+  _direction?: string,
+  options?: Parameters<typeof createRect>[2],
+): Shape {
+  return createRect(id, box, {
+    ...options,
+    meta: { isContainer: true, ...options?.meta },
+  });
+}
+
 import { exportMarkdown } from "./export-markdown";
 
 describe("exportMarkdown", () => {
@@ -53,7 +83,7 @@ describe("exportMarkdown", () => {
     const doc = createDocument([page]);
     const md = exportMarkdown(doc, { includeHeader: false });
 
-    expect(md).toBe("- #page-1 — Home Screen (untagged page) [x:0.00 y:0.00 w:1440.00 h:900.00]\n");
+    expect(md).toBe("- #page-1 — Home Screen (untagged rect) [x:0.00 y:0.00 w:1440.00 h:900.00]\n");
   });
 
   it("exports a root page with bounding box in tree format", () => {
@@ -74,7 +104,7 @@ describe("exportMarkdown", () => {
     const md = exportMarkdown(doc, { includeHeader: false });
 
     expect(md).toBe(
-      "- #page-1 — Landing Page (untagged page) [x:0.00 y:0.00 w:1440.00 h:900.00]\n",
+      "- #page-1 — Landing Page (untagged rect) [x:0.00 y:0.00 w:1440.00 h:900.00]\n",
     );
   });
 
@@ -94,7 +124,7 @@ describe("exportMarkdown", () => {
     const md = exportMarkdown(doc, { includeHeader: false });
 
     expect(md).toBe(
-      "- #page-1 — Agnostic Page (untagged page) [x:0.00 y:0.00 w:1440.00 h:900.00]\n",
+      "- #page-1 — Agnostic Page (untagged rect) [x:0.00 y:0.00 w:1440.00 h:900.00]\n",
     );
   });
 
@@ -163,7 +193,7 @@ describe("exportMarkdown", () => {
       "- #root-1 — Web App (untagged rect) [x:0.00 y:0.00 w:1200.00 h:800.00]\n",
     );
     expect(md).toContain(
-      "  - #sec-1 — Header Section (untagged section) [x:20.00 y:20.00 w:1160.00 h:200.00]\n",
+      "  - #sec-1 — Header Section (untagged rect) [x:20.00 y:20.00 w:1160.00 h:200.00]\n",
     );
     expect(md).toContain(
       "    - #nav-1 — Navigation Bar (Navigation Bar) — rect [x:40.00 y:40.00 w:500.00 h:60.00]\n",
@@ -245,7 +275,7 @@ describe("exportMarkdown", () => {
 
     expect(run1).toBe(run2);
     expect(run1).toBe(
-      "# OpenDraw Document\n\n- #page-1 — Stable Canvas (untagged page) [x:0.00 y:0.00 w:1000.00 h:1000.00]\n  - #btn-1 — Button (Button, a: 1, b: 2, z: 99) — rect [x:10.00 y:10.00 w:100.00 h:40.00] _(hidden on desktop, large-screen)_\n",
+      "# OpenDraw Document\n\n- #page-1 — Stable Canvas (untagged rect) [x:0.00 y:0.00 w:1000.00 h:1000.00]\n  - #btn-1 — Button (Button, a: 1, b: 2, z: 99) — rect [x:10.00 y:10.00 w:100.00 h:40.00] _(hidden on desktop, large-screen)_\n",
     );
   });
 

@@ -6,38 +6,24 @@ import { getRootContainerIds, pickAnyRootChip } from "./canvas-overlays";
 
 export function syncVisibleChipRoots(
   curDoc: Document,
-  canvas: CanvasController,
   disabledRoots: ReadonlySet<ShapeId>,
 ): Set<ShapeId> {
+  const visible = new Set<ShapeId>();
   for (const shape of Object.values(curDoc.shapes)) {
-    if (isRootId(shape.parentId)) {
-      if (!disabledRoots.has(shape.id)) {
-        if (!canvas.isRootChipsVisible(shape.id)) {
-          canvas.setRootChipsVisible(shape.id, true);
-        }
-      } else {
-        if (canvas.isRootChipsVisible(shape.id)) {
-          canvas.setRootChipsVisible(shape.id, false);
-        }
-      }
+    if (isRootId(shape.parentId) && !disabledRoots.has(shape.id)) {
+      visible.add(shape.id);
     }
   }
-  return new Set(canvas.getVisibleChipRootIds());
+  return visible;
 }
 
-export function toggleRootChip(
-  rootId: ShapeId,
-  canvas: CanvasController,
-  disabledRoots: Set<ShapeId>,
-): boolean {
-  if (canvas.isRootChipsVisible(rootId)) {
-    disabledRoots.add(rootId);
-    canvas.setRootChipsVisible(rootId, false);
-    return false;
+export function toggleRootChip(rootId: ShapeId, disabledRoots: Set<ShapeId>): boolean {
+  if (disabledRoots.has(rootId)) {
+    disabledRoots.delete(rootId);
+    return true;
   }
-  disabledRoots.delete(rootId);
-  canvas.setRootChipsVisible(rootId, true);
-  return true;
+  disabledRoots.add(rootId);
+  return false;
 }
 
 export interface UseRootChipVisibilityOptions {
@@ -48,6 +34,7 @@ export interface UseRootChipVisibilityOptions {
 export interface UseRootChipVisibilityResult {
   readonly initialRootIds: ReadonlySet<ShapeId>;
   readonly visibleChipRoots: ReadonlySet<ShapeId>;
+  readonly visibleChipRootsRef: React.MutableRefObject<ReadonlySet<ShapeId>>;
   readonly handleToggleChildChips: (rootId: ShapeId) => void;
   readonly interceptPointerDown: (
     event: PointerEvent,
@@ -57,7 +44,7 @@ export interface UseRootChipVisibilityResult {
       readonly doc: Document;
     },
   ) => boolean | void;
-  readonly syncVisibleChipRoots: (doc: Document, canvas: CanvasController) => void;
+  readonly syncVisibleChipRoots: (doc: Document) => void;
 }
 
 export function useRootChipVisibility(
@@ -71,18 +58,22 @@ export function useRootChipVisibility(
   const [visibleChipRoots, setVisibleChipRoots] = useState<ReadonlySet<ShapeId>>(
     () => initialRootIds,
   );
+  const visibleChipRootsRef = useRef<ReadonlySet<ShapeId>>(initialRootIds);
 
-  const sync = useCallback((curDoc: Document, canvas: CanvasController): void => {
-    const nextVisible = syncVisibleChipRoots(curDoc, canvas, disabledChipRootsRef.current);
+  const sync = useCallback((curDoc: Document): void => {
+    const nextVisible = syncVisibleChipRoots(curDoc, disabledChipRootsRef.current);
+    visibleChipRootsRef.current = nextVisible;
     setVisibleChipRoots(nextVisible);
   }, []);
 
   const handleToggleChildChips = useCallback(
     (rootId: ShapeId): void => {
+      toggleRootChip(rootId, disabledChipRootsRef.current);
       const ed = editorRef.current;
       if (!ed) return;
-      toggleRootChip(rootId, ed.canvas, disabledChipRootsRef.current);
-      setVisibleChipRoots(new Set(ed.canvas.getVisibleChipRootIds()));
+      const nextVisible = syncVisibleChipRoots(ed.getDocument(), disabledChipRootsRef.current);
+      visibleChipRootsRef.current = nextVisible;
+      setVisibleChipRoots(nextVisible);
       ed.render();
     },
     [editorRef],
@@ -103,8 +94,10 @@ export function useRootChipVisibility(
     ): boolean => {
       const hitChip = pickAnyRootChip(curDoc, world, canvas.getCamera().zoom);
       if (hitChip !== null) {
-        toggleRootChip(hitChip, canvas, disabledChipRootsRef.current);
-        setVisibleChipRoots(new Set(canvas.getVisibleChipRootIds()));
+        toggleRootChip(hitChip, disabledChipRootsRef.current);
+        const nextVisible = syncVisibleChipRoots(curDoc, disabledChipRootsRef.current);
+        visibleChipRootsRef.current = nextVisible;
+        setVisibleChipRoots(nextVisible);
         editorRef.current?.render();
         return true;
       }
@@ -116,6 +109,7 @@ export function useRootChipVisibility(
   return {
     initialRootIds,
     visibleChipRoots,
+    visibleChipRootsRef,
     handleToggleChildChips,
     interceptPointerDown,
     syncVisibleChipRoots: sync,

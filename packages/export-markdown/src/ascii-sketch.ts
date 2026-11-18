@@ -4,7 +4,12 @@
 import { isRootId, ROOT_ID, SHAPE_KINDS, type ShapeId } from "@open-draw/canvas";
 import type { Document, Shape } from "@open-draw/canvas";
 import { absoluteBoundingBox } from "@open-draw/canvas";
-import { buildChildIndex, getShapeSemantic } from "@open-draw/semantics";
+import {
+  buildChildIndex,
+  getShapeHiddenOn,
+  getShapeOrder,
+  getShapeSemantic,
+} from "@open-draw/semantics";
 import {
   ASCII_BOX_CHARS,
   ASCII_CAPTIONS,
@@ -56,9 +61,9 @@ function getSketchShapes(doc: Document, options?: MarkdownExportOptions): readon
   const walk = (parentId: ShapeId): void => {
     let children = childIndex.get(parentId) ?? [];
     if (deviceType !== undefined) {
-      children = children.filter((s) => !s.meta.hiddenOn?.includes(deviceType));
+      children = children.filter((s) => !getShapeHiddenOn(s)?.includes(deviceType));
       children = [...children].sort(
-        (a, b) => (a.meta.order?.[deviceType] ?? 0) - (b.meta.order?.[deviceType] ?? 0),
+        (a, b) => (getShapeOrder(a, deviceType) ?? 0) - (getShapeOrder(b, deviceType) ?? 0),
       );
     }
     for (const child of children) {
@@ -72,7 +77,7 @@ function getSketchShapes(doc: Document, options?: MarkdownExportOptions): readon
     if (root === undefined) {
       return [];
     }
-    if (deviceType !== undefined && root.meta.hiddenOn?.includes(deviceType)) {
+    if (deviceType !== undefined && getShapeHiddenOn(root)?.includes(deviceType)) {
       return [];
     }
     result.push(root);

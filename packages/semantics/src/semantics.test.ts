@@ -1,13 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { DEVICE_TYPES, parseShapeId, ROOT_ID } from "@open-draw/canvas";
-import { DESIGN_STYLES, PLATFORMS, STYLE_PROFILES } from "@open-draw/profiles";
-import {
-  createDocument,
-  createPage,
-  createRect,
-  createSection,
-  type Shape,
-} from "@open-draw/canvas";
+import { parseShapeId, ROOT_ID, type ShapeId, type BoundingBox } from "@open-draw/canvas";
+import { DESIGN_STYLES, DEVICE_TYPES, PLATFORMS, STYLE_PROFILES } from "@open-draw/profiles";
+import { createDocument, createRect, type Shape } from "@open-draw/canvas";
+
+function createPage(
+  id: ShapeId,
+  box: BoundingBox,
+  options?: Parameters<typeof createRect>[2],
+): Shape {
+  return createRect(id, box, {
+    ...options,
+    meta: { isContainer: true, ...options?.meta },
+  });
+}
+
+function createSection(
+  id: ShapeId,
+  box: BoundingBox,
+  _direction?: string,
+  options?: Parameters<typeof createRect>[2],
+): Shape {
+  return createRect(id, box, {
+    ...options,
+    meta: { isContainer: true, ...options?.meta },
+  });
+}
 import { ANDROID_NATIVE_PROFILE, FLUTTER_PROFILE, WEB_PROFILE } from "@open-draw/profiles";
 import {
   computeSemanticConflict,
@@ -176,7 +193,7 @@ describe("semantic resolution and display name (Ruling 9, R-042)", () => {
     expect(semantic?.properties?.variant).toBe("primary");
   });
 
-  it("resolves dynamic display name for root containers (Screen for Android, Scaffold for Flutter, Page for Web, Canvas Board for agnostic)", () => {
+  it("resolves dynamic display name for root containers (Screen for Android, Scaffold for Flutter, Page for Web, Rectangle for agnostic)", () => {
     const pageShape = createPage(pageId, { x: 0, y: 0, width: 1000, height: 1000 });
 
     // Web profile -> Page
@@ -185,8 +202,8 @@ describe("semantic resolution and display name (Ruling 9, R-042)", () => {
     expect(resolveShapeDisplayName(pageShape, ANDROID_NATIVE_PROFILE)).toBe("Screen");
     // Flutter profile -> Scaffold
     expect(resolveShapeDisplayName(pageShape, FLUTTER_PROFILE)).toBe("Scaffold");
-    // Platform-agnostic (profile is undefined) -> Canvas Board
-    expect(resolveShapeDisplayName(pageShape, undefined)).toBe("Canvas Board");
+    // Platform-agnostic (profile is undefined) -> Rectangle
+    expect(resolveShapeDisplayName(pageShape, undefined)).toBe("Rectangle");
 
     // Explicit label overrides root semantic
     const labeledPage = createPage(

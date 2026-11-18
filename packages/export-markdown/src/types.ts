@@ -1,4 +1,5 @@
-import type { DeviceType, ShapeId } from "@open-draw/canvas";
+import type { ShapeId } from "@open-draw/canvas";
+import type { DeviceType } from "@open-draw/semantics";
 import type { ExportOptions } from "./export-contract";
 
 export interface MarkdownExportOptions extends ExportOptions {

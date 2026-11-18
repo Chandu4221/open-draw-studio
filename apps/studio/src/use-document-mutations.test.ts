@@ -1,17 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  DEVICE_TYPES,
-  ROOT_ID,
-  SHAPE_KINDS,
-  type ShapeId,
-  COMMANDS,
-  type Shape,
-} from "@open-draw/canvas";
-import { DESIGN_STYLES, PLATFORMS, STYLE_PROFILES } from "@open-draw/profiles";
+import { ROOT_ID, SHAPE_KINDS, type ShapeId, COMMANDS, type Shape } from "@open-draw/canvas";
+import { DEVICE_TYPES, DESIGN_STYLES, PLATFORMS, STYLE_PROFILES } from "@open-draw/profiles";
 import {
   PLUGIN_DESIGN_STYLE,
+  PLUGIN_RESPONSIVE,
   PLUGIN_ROOT_PLATFORM,
   PLUGIN_ROOT_ROLE,
+  PLUGIN_ROOT_STYLE,
   PLUGIN_SEMANTICS,
   ROOT_ROLES,
 } from "@open-draw/semantics";
@@ -113,14 +108,19 @@ describe("useDocumentMutations", () => {
     expect(setActiveDeviceType).toHaveBeenCalledWith(undefined);
   });
 
-  it("commits setRootStyle and triggers render", () => {
+  it("commits setShapePluginData for root style and triggers render", () => {
     const rootShape = createMockShape("root-1", ROOT_ID);
     const { mutations, commit, render } = useTestMutations({ rootShape });
 
     mutations.handleSetStyle(STYLE_PROFILES.crayon);
 
     expect(commit).toHaveBeenCalledWith([
-      { type: COMMANDS.setRootStyle, id: "root-1", style: STYLE_PROFILES.crayon },
+      {
+        type: COMMANDS.setShapePluginData,
+        id: "root-1",
+        pluginId: PLUGIN_ROOT_STYLE,
+        data: STYLE_PROFILES.crayon,
+      },
     ]);
     expect(render).toHaveBeenCalledTimes(1);
   });
@@ -207,7 +207,11 @@ describe("useDocumentMutations", () => {
   it("toggles hiddenOn device types and normalizes empty list to null", () => {
     const selected = createMockShape("s-1", ROOT_ID, {
       order: {},
-      hiddenOn: [DEVICE_TYPES.mobile],
+      pluginData: {
+        [PLUGIN_RESPONSIVE]: {
+          hiddenOn: [DEVICE_TYPES.mobile],
+        },
+      },
     });
     const { mutations, commit } = useTestMutations({
       selectedShape: selected,
@@ -216,15 +220,23 @@ describe("useDocumentMutations", () => {
 
     mutations.handleToggleHiddenOn(DEVICE_TYPES.mobile);
     expect(commit).toHaveBeenCalledWith([
-      { type: COMMANDS.setShapeHiddenOn, id: "s-1", hiddenOn: null },
+      {
+        type: COMMANDS.setShapePluginData,
+        id: "s-1",
+        pluginId: PLUGIN_RESPONSIVE,
+        data: null,
+      },
     ]);
 
     mutations.handleToggleHiddenOn(DEVICE_TYPES.tablet);
     expect(commit).toHaveBeenCalledWith([
       {
-        type: COMMANDS.setShapeHiddenOn,
+        type: COMMANDS.setShapePluginData,
         id: "s-1",
-        hiddenOn: [DEVICE_TYPES.mobile, DEVICE_TYPES.tablet],
+        pluginId: PLUGIN_RESPONSIVE,
+        data: {
+          hiddenOn: [DEVICE_TYPES.mobile, DEVICE_TYPES.tablet],
+        },
       },
     ]);
   });
@@ -238,12 +250,26 @@ describe("useDocumentMutations", () => {
 
     mutations.handleOrderChange(DEVICE_TYPES.mobile, "2");
     expect(commit).toHaveBeenCalledWith([
-      { type: COMMANDS.setShapeOrder, id: "s-1", deviceType: DEVICE_TYPES.mobile, order: 2 },
+      {
+        type: COMMANDS.setShapePluginData,
+        id: "s-1",
+        pluginId: PLUGIN_RESPONSIVE,
+        data: {
+          order: {
+            [DEVICE_TYPES.mobile]: 2,
+          },
+        },
+      },
     ]);
 
     mutations.handleOrderChange(DEVICE_TYPES.mobile, "  ");
     expect(commit).toHaveBeenCalledWith([
-      { type: COMMANDS.setShapeOrder, id: "s-1", deviceType: DEVICE_TYPES.mobile, order: null },
+      {
+        type: COMMANDS.setShapePluginData,
+        id: "s-1",
+        pluginId: PLUGIN_RESPONSIVE,
+        data: null,
+      },
     ]);
   });
 

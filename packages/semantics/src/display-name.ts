@@ -1,7 +1,7 @@
 // Profile-aware display name chain resolver (ADR-0004 D2, Ruling 9, R-042).
 // Full chain: label -> semantic display name (from profile data) -> shape kind label.
 import type { BuiltinShapeKind, Shape } from "@open-draw/canvas";
-import { SHAPE_KINDS, SHAPE_KIND_LABELS, isRootId } from "@open-draw/canvas";
+import { SHAPE_KIND_LABELS, isRootId } from "@open-draw/canvas";
 import type { PlatformId, PlatformProfile } from "@open-draw/profiles";
 import { PLATFORMS } from "@open-draw/profiles";
 import { ROOT_ROLES, type RootRole } from "./root-roles";
@@ -53,9 +53,6 @@ export function resolveShapeDisplayName(shape: Shape, profile?: PlatformProfile)
         ROOT_SEMANTIC_DISPLAY_NAMES[profile.rootSemantic] ??
         profile.rootSemantic.charAt(0).toUpperCase() + profile.rootSemantic.slice(1)
       );
-    }
-    if (shape.kind === SHAPE_KINDS.page) {
-      return SHAPE_KIND_LABELS[SHAPE_KINDS.page];
     }
   }
   if (semantic !== undefined && profile !== undefined) {

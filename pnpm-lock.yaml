@@ -241,8 +241,8 @@ importers:
   apps/studio:
     dependencies:
       "@open-draw/canvas":
-        specifier: ^0.9.3
-        version: 0.9.3
+        specifier: ^0.10.0
+        version: 0.10.0
       "@open-draw/export-markdown":
         specifier: workspace:*
         version: link:../../packages/export-markdown
@@ -305,8 +305,8 @@ importers:
   packages/export-markdown:
     dependencies:
       "@open-draw/canvas":
-        specifier: ^0.9.3
-        version: 0.9.3
+        specifier: ^0.10.0
+        version: 0.10.0
       "@open-draw/semantics":
         specifier: workspace:*
         version: link:../semantics
@@ -322,10 +322,6 @@ importers:
         version: 5.0.5(@types/node@24.19.2)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2))
 
   packages/profiles:
-    dependencies:
-      "@open-draw/canvas":
-        specifier: ^0.9.3
-        version: 0.9.3
     devDependencies:
       eslint:
         specifier: ^10.13.0
@@ -340,8 +336,8 @@ importers:
   packages/semantics:
     dependencies:
       "@open-draw/canvas":
-        specifier: ^0.9.3
-        version: 0.9.3
+        specifier: ^0.10.0
+        version: 0.10.0
       "@open-draw/profiles":
         specifier: workspace:*
         version: link:../profiles
@@ -896,10 +892,10 @@ packages:
     os: [linux]
     libc: [glibc]
 
-  "@open-draw/canvas@0.9.3":
+  "@open-draw/canvas@0.10.0":
     resolution:
       {
-        integrity: sha512-nSmEP69QhY8Q2UT08Yoj3DEV/B+QoEDNjohlGkeUQsgoTfTkPy6Mp2yK/Sc3O5jBPAO1VLx8wdvilNiVTXIIlg==,
+        integrity: sha512-LvabuiUWpOb4JUsBTUhpcQZLKrHRBskzwg84xUcUIVBRs+1Zjqu3ZuwHOPf8FfKP0E4NQhZ8muGdXEbYVYgyKw==,
       }
 
   "@oxc-project/types@0.155.0":
@@ -3344,7 +3340,7 @@ snapshots:
   "@napi-rs/lzma-linux-x64-gnu@1.5.1":
     optional: true
 
-  "@open-draw/canvas@0.9.3": {}
+  "@open-draw/canvas@0.10.0": {}
 
   "@oxc-project/types@0.155.0": {}
 

@@ -151,8 +151,7 @@ export function ShapeStyleInspector(props: ShapeStyleInspectorProps): React.JSX.
   const supportsFill =
     selectedShape.kind === SHAPE_KINDS.rect ||
     selectedShape.kind === SHAPE_KINDS.ellipse ||
-    selectedShape.kind === SHAPE_KINDS.page ||
-    selectedShape.kind === SHAPE_KINDS.section;
+    selectedShape.kind === SHAPE_KINDS.group;
 
   const currentFillStyle: FillStyle =
     selectedShape.fillStyle ??
