@@ -17,13 +17,13 @@ Previously (ADR-0001 D4, R-036), production builds of Studio and Playground were
 
 - Production deployment of Studio migrates from GitHub Pages to **Cloudflare Pages**.
 - Cloudflare Pages provides free-tier hosting from private GitHub repositories, automated global edge distribution, free managed SSL, and custom domain mapping.
-- The project domain serves Studio at root (`https://open-draw.pages.dev/`). Playground is strictly an internal local/pre-prod development environment run via `pnpm dev` and is never deployed or exposed to end users.
+- The project domain serves Studio at root (`https://opendrawstudio.pages.dev/`). Playground is strictly an internal local/pre-prod development environment run via `pnpm dev` and is never deployed or exposed to end users.
 
 ### D2 — Release gate preserved (R-034, R-036)
 
 - Deployments continue to be strictly tag-gated. Only git tags matching `v*.*.*` that point directly to verified commits on `main` trigger deployment (**R-034**, **R-036**).
 - Development builds and unmerged feature branches are never automatically deployed to production.
-- Deployment is executed via GitHub Actions using the official Cloudflare Wrangler CLI (`npx -y --prefix /tmp wrangler pages project create open-draw --production-branch=main || true` followed by `npx -y --prefix /tmp wrangler pages deploy`) with repository secrets (`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`), running from `/tmp` to avoid package manager checks and root workspace pollution.
+- Deployment is executed via GitHub Actions using the official Cloudflare Wrangler CLI (`npx -y --prefix /tmp wrangler pages project create opendrawstudio --production-branch=main || true` followed by `npx -y --prefix /tmp wrangler pages deploy`) with repository secrets (`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`), running from `/tmp` to avoid package manager checks and root workspace pollution.
 
 ### D3 — Vite root base path configuration
 
