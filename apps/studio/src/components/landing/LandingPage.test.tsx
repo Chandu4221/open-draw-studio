@@ -4,6 +4,7 @@ import { renderToString } from "react-dom/server";
 import { LANDING_DESIGN_STYLES } from "./landing-styles.js";
 import { LandingPage } from "./LandingPage.js";
 import { LandingHero } from "./LandingHero.js";
+import { LandingShowcase } from "./LandingShowcase.js";
 import { LandingFeatures } from "./LandingFeatures.js";
 import { LandingPillars } from "./LandingPillars.js";
 import { LandingFooter } from "./LandingFooter.js";
@@ -24,6 +25,9 @@ describe("LandingPage", () => {
     );
     expect(html).toContain("Simple by default. Powerful by intention.");
     expect(html).toContain("Try OpenDraw");
+    expect(html).toContain("From Wireframe to Production UI");
+    expect(html).toContain("/assets/showcase/showcase-wireframe.png");
+    expect(html).toContain("/assets/showcase/showcase-rendered.png");
     expect(html).toContain("Experience This WebPage in Different Design Styles");
     expect(html).toContain("Same content. Same structure. Different visual languages.");
     expect(html).toContain("More than shapes on a canvas.");
@@ -157,5 +161,21 @@ describe("LandingStyleSwitcher", () => {
     expect(html).not.toContain("STYLE:");
     // Button for Glass should be aria-pressed="true"
     expect(html).toMatch(/<button[^>]*aria-pressed="true"[^>]*>\s*Glass\s*<\/button>/);
+  });
+});
+
+describe("LandingShowcase", () => {
+  it("renders the wireframe-to-rendered UI comparison with both images and captions", () => {
+    const theme = LANDING_THEMES.minimal;
+    const html = renderToString(<LandingShowcase theme={theme} />);
+
+    expect(html).toContain("From Wireframe to Production UI");
+    expect(html).toContain("Semantic structure. Production output.");
+    expect(html).toContain("/assets/showcase/showcase-wireframe.png");
+    expect(html).toContain("/assets/showcase/showcase-rendered.png");
+    expect(html).toContain('alt="OpenDraw canvas wireframe with semantic tags"');
+    expect(html).toContain('alt="Rendered production UI component"');
+    expect(html).toContain("Sketch Structure &amp; Assign Meaning");
+    expect(html).toContain("Realized, Production-Ready Markup");
   });
 });

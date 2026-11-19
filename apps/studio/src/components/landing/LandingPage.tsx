@@ -5,6 +5,7 @@ import {
   type LandingDesignStyle,
 } from "./landing-styles.js";
 import { LandingHero } from "./LandingHero.js";
+import { LandingShowcase } from "./LandingShowcase.js";
 import { LandingFeatures } from "./LandingFeatures.js";
 import { LandingPillars } from "./LandingPillars.js";
 import { LandingFooter } from "./LandingFooter.js";
@@ -109,6 +110,12 @@ export function LandingPage({
         }}
       >
         <LandingHero theme={theme} onLaunch={onLaunch} />
+
+        <div
+          style={{ margin: "0 auto", maxWidth: "960px", width: "90%", ...theme.sectionDivider }}
+        />
+
+        <LandingShowcase theme={theme} />
 
         <div
           style={{ margin: "0 auto", maxWidth: "960px", width: "90%", ...theme.sectionDivider }}
