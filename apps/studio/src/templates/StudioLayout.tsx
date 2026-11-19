@@ -14,6 +14,7 @@ export interface StudioLayoutProps {
   readonly shortcutsSlot?: React.ReactNode | undefined;
   readonly sidebarSlot: React.ReactNode;
   readonly modalSlot?: React.ReactNode | undefined;
+  readonly onCanvasContextMenu?: ((e: React.MouseEvent) => void) | undefined;
 }
 
 export function StudioLayout(props: StudioLayoutProps): React.JSX.Element {
@@ -28,6 +29,7 @@ export function StudioLayout(props: StudioLayoutProps): React.JSX.Element {
     shortcutsSlot,
     sidebarSlot,
     modalSlot,
+    onCanvasContextMenu,
   } = props;
 
   const handleAllotmentChange = (sizes: number[]) => {
@@ -54,7 +56,12 @@ export function StudioLayout(props: StudioLayoutProps): React.JSX.Element {
         onVisibleChange={handleVisibleChange}
       >
         <Allotment.Pane minSize={400}>
-          <div ref={canvasContainerRef} className="od-canvas-bg" style={CANVAS_CONTAINER_STYLE}>
+          <div
+            ref={canvasContainerRef}
+            className="od-canvas-bg"
+            style={CANVAS_CONTAINER_STYLE}
+            onContextMenu={onCanvasContextMenu}
+          >
             {brandSlot}
             {!showSidebar && (
               <button

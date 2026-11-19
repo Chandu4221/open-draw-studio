@@ -29,6 +29,8 @@ import { CanvasShortcutsTrigger } from "./CanvasShortcutsTrigger";
 import { CanvasZoomControls } from "./CanvasZoomControls";
 import { ExportModal, type ExportFormat } from "./ExportModal";
 import { KeyboardShortcutsModal } from "./KeyboardShortcutsModal";
+import { ContextMenu } from "./ContextMenu";
+import { useContextMenu } from "../use-context-menu";
 import { useBatchMutations } from "../use-batch-mutations";
 import { useDocumentMutations } from "../use-document-mutations";
 import { useGeometryMutations } from "../use-geometry-mutations";
@@ -268,12 +270,20 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
     commit,
     render,
   });
+  const contextMenu = useContextMenu({
+    getEditor: () => editorRef.current,
+    doc,
+    onDuplicate: toolbarActions.handleDuplicate,
+    onDelete: batchMutations.handleBatchDelete,
+    onNotify: (text) => toast.push({ type: "info", text }),
+  });
 
   const emptyDoc = Object.keys(doc.shapes).length === 0;
 
   return (
     <StudioLayout
       canvasContainerRef={canvasContainerRef}
+      onCanvasContextMenu={contextMenu.openContextMenu}
       showSidebar={showSidebar}
       onToggleSidebar={setShowSidebar}
       brandSlot={<CanvasBrand onBackToLanding={onBackToLanding} />}
@@ -316,6 +326,7 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
           handleToggleChildChips={handleToggleChildChips}
           hoveredShapeId={hoveredShapeId}
           onHoverShape={setHoveredShapeId}
+          onContextMenu={(id, e) => contextMenu.openContextMenu(e, id)}
           onClose={() => setShowSidebar(false)}
         />
       }
@@ -333,6 +344,13 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
           <KeyboardShortcutsModal
             isOpen={isShortcutsOpen}
             onClose={() => setIsShortcutsOpen(false)}
+          />
+          <ContextMenu
+            isOpen={contextMenu.state.isOpen}
+            x={contextMenu.state.x}
+            y={contextMenu.state.y}
+            groups={contextMenu.groups}
+            onClose={contextMenu.closeContextMenu}
           />
         </>
       }

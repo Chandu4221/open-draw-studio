@@ -1469,3 +1469,99 @@
   border-right: 6px solid transparent;
   border-bottom: 7px solid var(--od-accent);
 }
+
+/* Context Menu */
+.od-context-menu {
+  background-color: var(--od-surface);
+  border: var(--od-border-width) solid var(--od-border);
+  border-radius: var(--od-radius);
+  box-shadow: var(--od-shadow-floating);
+  color: var(--od-text);
+  font-family: var(--od-font);
+  min-width: 180px;
+  max-width: 260px;
+  padding: var(--od-4) 0;
+  box-sizing: border-box;
+  user-select: none;
+  animation: od-context-menu-fade-in 0.1s ease-out;
+}
+
+@keyframes od-context-menu-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.od-context-menu__group {
+  display: flex;
+  flex-direction: column;
+}
+
+.od-context-menu__group + .od-context-menu__group {
+  margin-top: var(--od-4);
+  padding-top: var(--od-4);
+  border-top: var(--od-border-width) solid var(--od-border);
+}
+
+.od-context-menu__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--od-8);
+  width: 100%;
+  padding: var(--od-6) var(--od-12);
+  border: none;
+  background: transparent;
+  color: var(--od-text);
+  font-size: var(--od-text-sm);
+  font-family: var(--od-font);
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.1s ease;
+}
+
+.od-context-menu__item:hover:not(:disabled) {
+  background-color: var(--od-accent-soft);
+}
+
+.od-context-menu__item:focus-visible {
+  outline: var(--od-focus-ring) solid var(--od-accent);
+  outline-offset: -1px;
+}
+
+.od-context-menu__item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.od-context-menu__item--danger {
+  color: var(--od-danger);
+}
+
+.od-context-menu__item--danger:hover:not(:disabled) {
+  background-color: var(--od-danger-soft);
+}
+
+.od-context-menu__label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.od-context-menu__shortcut {
+  flex-shrink: 0;
+  color: var(--od-text-tertiary);
+  font-size: var(--od-text-xs);
+}
+
+.od-context-menu__shortcut .od-kbd {
+  font-size: 10px;
+  padding: 1px 4px;
+}

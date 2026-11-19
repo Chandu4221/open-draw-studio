@@ -28,6 +28,7 @@ export interface TreeOutlineProps {
   readonly onHoverShape?: ((id: ShapeId | null) => void) | undefined;
   readonly collapsedIds?: ReadonlySet<ShapeId> | undefined;
   readonly onToggleCollapse?: ((id: ShapeId) => void) | undefined;
+  readonly onContextMenu?: ((id: ShapeId, event: React.MouseEvent) => void) | undefined;
 }
 
 export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
@@ -43,6 +44,7 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
     onHoverShape,
     collapsedIds: controlledCollapsedIds,
     onToggleCollapse,
+    onContextMenu,
   } = props;
 
   const [internalCollapsedIds, setInternalCollapsedIds] = useState<ReadonlySet<ShapeId>>(
@@ -154,6 +156,7 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
                 aria-label={`Select layer ${itemName}`}
                 className={`od-tree-item${isHovered ? " od-tree-item--hovered" : ""}`}
                 onClick={() => selectShape(node.shape.id)}
+                onContextMenu={(e) => onContextMenu?.(node.shape.id, e)}
                 onPointerEnter={() => onHoverShape?.(node.shape.id)}
                 onPointerLeave={() => onHoverShape?.(null)}
                 onKeyDown={(e) => {

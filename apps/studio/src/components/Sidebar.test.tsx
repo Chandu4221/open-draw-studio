@@ -171,4 +171,37 @@ describe("Sidebar collapsible panels and typography", () => {
     expect(html).toContain("overflow-y:auto");
     expect(html).not.toContain("flex:1 1 0px");
   });
+
+  it("accepts onContextMenu handler and renders layers", () => {
+    const onContextMenu = vi.fn();
+    const html = renderToString(
+      <Sidebar
+        treeNodes={dummyNodes}
+        selectedShapeId={parseShapeId("shape-1")}
+        selectShape={vi.fn()}
+        selectedShape={dummyShape}
+        rootShape={dummyShape}
+        rootPlatform={undefined}
+        rootStyle={STYLE_PROFILES.minimal}
+        activeProfile={undefined}
+        conflict={undefined}
+        semanticDef={undefined}
+        semanticProps={{}}
+        handleSetLabel={vi.fn()}
+        handleSetContent={vi.fn()}
+        handleSetPlatform={vi.fn()}
+        handleSetStyle={vi.fn()}
+        handleSetSemantic={vi.fn()}
+        handlePropertyChange={vi.fn()}
+        handleToggleHiddenOn={vi.fn()}
+        handleOrderChange={vi.fn()}
+        handleStyleChange={vi.fn()}
+        handleStylePreview={vi.fn()}
+        handleStyleCommit={vi.fn()}
+        onContextMenu={onContextMenu}
+      />,
+    );
+
+    expect(html).toContain("Rectangle");
+  });
 });
