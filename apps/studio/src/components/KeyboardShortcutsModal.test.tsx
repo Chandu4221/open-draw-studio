@@ -41,6 +41,7 @@ describe("KeyboardShortcutsModal", () => {
     // Edit actions
     expect(html).toContain("Undo");
     expect(html).toContain("Redo");
+    expect(html).toContain("Cut");
     expect(html).toContain("Duplicate");
     expect(html).toContain("Copy");
     expect(html).toContain("Paste");

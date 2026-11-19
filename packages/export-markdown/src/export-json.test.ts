@@ -262,6 +262,29 @@ describe("exportJson parity (Milestone 11A Work Package A)", () => {
     expect(exported.shapeOrder).toEqual(["screen-1", "button-1"]);
   });
 
+  it("sorts shapeOrder in visual top-to-bottom order when meta.order is absent", () => {
+    const pageId = parseShapeId("page-spatial");
+    const topCard = parseShapeId("card-1-top");
+    const bottomCard = parseShapeId("card-3-bottom");
+    const middleCard = parseShapeId("card-2-middle");
+
+    // middleCard inserted last in document, but positioned at y=300 between y=100 and y=600
+    const doc = createDocument([
+      createRect(pageId, { x: 0, y: 0, width: 800, height: 1200 }),
+      createRect(topCard, { x: 20, y: 100, width: 200, height: 100 }, { parent: pageId }),
+      createRect(bottomCard, { x: 20, y: 600, width: 200, height: 100 }, { parent: pageId }),
+      createRect(middleCard, { x: 20, y: 300, width: 200, height: 100 }, { parent: pageId }),
+    ]);
+
+    const parsed = JSON.parse(exportJson(doc));
+    expect(parsed.shapeOrder).toEqual([
+      "page-spatial",
+      "card-1-top",
+      "card-2-middle",
+      "card-3-bottom",
+    ]);
+  });
+
   it("rejects customData attempting to override reserved shape properties (C7)", () => {
     const customId = parseShapeId("custom-1");
     const kind = parseCustomShapeKind("vendor:widget");

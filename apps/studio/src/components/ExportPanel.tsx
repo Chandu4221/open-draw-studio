@@ -246,6 +246,19 @@ export function ExportPanel(props: ExportPanelProps): React.JSX.Element {
         </label>
       </div>
 
+      {onOpenAdvancedModal && (
+        <OdButton
+          variant="outline"
+          onClick={onOpenAdvancedModal}
+          style={{
+            width: "100%",
+            justifyContent: "center",
+          }}
+        >
+          Preview & Options...
+        </OdButton>
+      )}
+
       <OdButton
         variant="primary"
         disabled={selectedFormatsCount === 0 || isExporting}
@@ -274,23 +287,6 @@ export function ExportPanel(props: ExportPanelProps): React.JSX.Element {
         >
           {exportError}
         </span>
-      )}
-
-      {onOpenAdvancedModal && (
-        <OdButton
-          variant="ghost"
-          onClick={onOpenAdvancedModal}
-          style={{
-            width: "100%",
-            justifyContent: "center",
-            fontSize: "var(--od-text-xs)",
-            color: "var(--od-text-secondary)",
-            height: "24px",
-            padding: 0,
-          }}
-        >
-          Preview & Options...
-        </OdButton>
       )}
     </div>
   );

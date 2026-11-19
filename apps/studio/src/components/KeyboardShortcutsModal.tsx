@@ -46,9 +46,10 @@ const RIGHT_GROUPS: readonly ShortcutGroup[] = [
     items: [
       { label: "Undo", keys: ["Ctrl+Z"] },
       { label: "Redo", keys: ["Ctrl+Shift+Z", "Ctrl+Y"] },
-      { label: "Duplicate", keys: ["Ctrl+D"] },
+      { label: "Cut", keys: ["Ctrl+X"] },
       { label: "Copy", keys: ["Ctrl+C"] },
       { label: "Paste", keys: ["Ctrl+V"] },
+      { label: "Duplicate", keys: ["Ctrl+D"] },
       { label: "Delete Selected", keys: ["Delete", "Backspace"] },
     ],
   },

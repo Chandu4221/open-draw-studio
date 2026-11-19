@@ -40,6 +40,33 @@ export interface SemanticTreeNode {
   readonly conflict?: SemanticConflict;
 }
 
+export function compareShapesSpatial(a: Shape, b: Shape): number {
+  const diffY = a.boundingBox.y - b.boundingBox.y;
+  if (Math.abs(diffY) > 1e-4) {
+    return diffY;
+  }
+  const diffX = a.boundingBox.x - b.boundingBox.x;
+  if (Math.abs(diffX) > 1e-4) {
+    return diffX;
+  }
+  return a.id.localeCompare(b.id);
+}
+
+export function sortSiblingShapes(children: Shape[], deviceType?: DeviceType): void {
+  children.sort((a, b) => {
+    const orderA = getShapeOrder(a, deviceType);
+    const orderB = getShapeOrder(b, deviceType);
+    if (orderA !== undefined || orderB !== undefined) {
+      const valA = orderA ?? 0;
+      const valB = orderB ?? 0;
+      if (valA !== valB) {
+        return valA - valB;
+      }
+    }
+    return compareShapesSpatial(a, b);
+  });
+}
+
 /**
  * Pure hierarchical preorder walk of a document from a root shape or the virtual canvas root (ROOT_ID).
  */
@@ -93,13 +120,7 @@ export function walkSemanticTree(
         ? deviceType[rootShape.id]
         : (deviceType as DeviceType | undefined);
 
-    if (activeDevice !== undefined) {
-      children.sort((a, b) => {
-        const orderA = getShapeOrder(a, activeDevice) ?? 0;
-        const orderB = getShapeOrder(b, activeDevice) ?? 0;
-        return orderA - orderB;
-      });
-    }
+    sortSiblingShapes(children, activeDevice);
 
     for (const child of children) {
       visit(child, depth + 1, rootShape, shapeProfile);
@@ -107,7 +128,10 @@ export function walkSemanticTree(
   }
 
   if (isRootId(rootId)) {
-    for (const child of childrenOf(doc, rootId, index)) {
+    const rootChildren = [...childrenOf(doc, rootId, index)];
+    const activeGlobalDevice = typeof deviceType === "string" ? deviceType : undefined;
+    sortSiblingShapes(rootChildren, activeGlobalDevice);
+    for (const child of rootChildren) {
       visit(child, 0);
     }
     return nodes;

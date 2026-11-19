@@ -92,4 +92,19 @@ describe("ExportPanel", () => {
 
     expect(html).toContain("Export ZIP (2) · Selected Screens");
   });
+
+  it("renders Preview & Options button as an outline button before the export button", () => {
+    const html = renderToString(
+      <ExportPanel doc={doc} targetRootShape={rootShape} onOpenAdvancedModal={vi.fn()} />,
+    );
+
+    expect(html).toContain("Preview &amp; Options...");
+    expect(html).toContain("od-btn--outline");
+
+    const previewIndex = html.indexOf("Preview &amp; Options...");
+    const exportIndex = html.indexOf("Export ZIP · Login Screen");
+    expect(previewIndex).toBeGreaterThan(-1);
+    expect(exportIndex).toBeGreaterThan(-1);
+    expect(previewIndex).toBeLessThan(exportIndex);
+  });
 });
