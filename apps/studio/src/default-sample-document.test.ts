@@ -13,13 +13,13 @@ import { normalizeStudioDocument } from "./normalize-document.js";
 import { computeInspectionData } from "./use-inspection-data.js";
 
 describe("createDefaultSampleDocument", () => {
-  it("creates a valid document containing the 34 sample landing page wireframe shapes", () => {
+  it("creates a valid document containing the 27 sample landing page wireframe shapes", () => {
     const doc = createDefaultSampleDocument();
     expect(doc.schema.version).toBe(1);
-    expect(Object.keys(doc.shapes)).toHaveLength(34);
+    expect(Object.keys(doc.shapes)).toHaveLength(27);
   });
 
-  it("configures the root landing page shape with screen role, web platform, and glassmorphism style", () => {
+  it("configures the root landing page shape with screen role, web platform, and brutalism style", () => {
     const doc = createDefaultSampleDocument();
     const root = doc.shapes["s-7a07" as ShapeId];
     expect(root).toBeDefined();
@@ -31,17 +31,16 @@ describe("createDefaultSampleDocument", () => {
     expect(root?.meta.isContainer).toBe(true);
     expect(root?.meta.pluginData?.[PLUGIN_ROOT_PLATFORM]).toBe("web");
     expect(root?.meta.pluginData?.[PLUGIN_ROOT_ROLE]).toBe("screen");
-    expect(root?.meta.pluginData?.[PLUGIN_DESIGN_STYLE]).toBe("glassmorphism");
+    expect(root?.meta.pluginData?.[PLUGIN_DESIGN_STYLE]).toBe("brutalism");
   });
 
-  it("nests top-level sections (navbar, hero, styles, pillars, closing cta) under the root", () => {
+  it("nests top-level sections (navbar, hero, styles, pillars) under the root", () => {
     const doc = createDefaultSampleDocument();
     const sectionIds: ShapeId[] = [
       "s-7a09" as ShapeId, // navbar
       "s-7a11" as ShapeId, // hero
-      "s-7a15" as ShapeId, // styles section
+      "s-504a05" as ShapeId, // styles section
       "s-7a29" as ShapeId, // pillars section
-      "s-7a37" as ShapeId, // closing cta section
     ];
 
     for (const id of sectionIds) {
@@ -53,9 +52,9 @@ describe("createDefaultSampleDocument", () => {
 
     expect(getShapeSemantic(doc.shapes["s-7a09" as ShapeId]!)?.id).toBe("navbar");
     expect(getShapeSemantic(doc.shapes["s-7a11" as ShapeId]!)?.id).toBe("section");
-    expect(getShapeSemantic(doc.shapes["s-7a15" as ShapeId]!)?.id).toBe("section");
+    expect(getShapeSemantic(doc.shapes["s-504a05" as ShapeId]!)?.id).toBe("section");
     expect(getShapeSemantic(doc.shapes["s-7a29" as ShapeId]!)?.id).toBe("section");
-    expect(getShapeSemantic(doc.shapes["s-7a37" as ShapeId]!)?.id).toBe("section");
+    expect(doc.shapes["s-7a37" as ShapeId]).toBeUndefined();
   });
 
   it("supports N-level deep nesting across sections, cards, and content elements", () => {
@@ -77,31 +76,45 @@ describe("createDefaultSampleDocument", () => {
     expect(headerText?.content).toBe("Draw on a real canvas");
     expect(getShapeSemantic(headerText!)?.id).toBe("heading");
 
-    // Level 4: Body Text inside Card s-7a2d
+    // Level 4: Body Text inside Card s-7a2d with explicit text semantics
     const bodyText = doc.shapes["s-7a2d" as ShapeId];
     expect(bodyText).toBeDefined();
     expect(bodyText?.parentId).toBe("s-7a2b" as ShapeId);
     expect(bodyText?.content).toBe("Build layouts with shapes, hierarchy, and structure.");
+    expect(getShapeSemantic(bodyText!)?.id).toBe("text");
   });
 
-  it("contains the 5 design style cards in the styles showcase section", () => {
+  it("contains the style switcher section with segmented control and description", () => {
     const doc = createDefaultSampleDocument();
-    const styleCardIds: ShapeId[] = [
-      "s-7a17" as ShapeId, // Minimal
-      "s-7a18" as ShapeId, // Glass
-      "s-7a26" as ShapeId, // Editorial
-      "s-7a27" as ShapeId, // Brutalist
-      "s-7a28" as ShapeId, // Soft
-    ];
+    const section = doc.shapes["s-504a05" as ShapeId];
+    expect(section).toBeDefined();
+    expect(section?.parentId).toBe("s-7a07" as ShapeId);
 
-    const expectedLabels = ["Minimal", "Glass", "Editorial", "Brutalist", "Soft"];
-    styleCardIds.forEach((id, index) => {
-      const card = doc.shapes[id];
-      expect(card).toBeDefined();
-      expect(card?.parentId).toBe("s-7a15" as ShapeId);
-      expect(card?.content).toBe(expectedLabels[index]);
-      expect(getShapeSemantic(card!)?.id).toBe("card");
-    });
+    const title = doc.shapes["s-504a07" as ShapeId];
+    expect(title?.content).toBe("Experience This WebPage in Different Design Styles");
+    expect(title?.parentId).toBe("s-504a05" as ShapeId);
+
+    const control = doc.shapes["s-504a06" as ShapeId];
+    expect(control?.content).toBe("Style Switcher Segmented Buttons");
+    expect(getShapeSemantic(control!)?.id).toBe("segmented-control");
+    expect(control?.parentId).toBe("s-504a05" as ShapeId);
+
+    const subtitle = doc.shapes["s-504a08" as ShapeId];
+    expect(subtitle?.content).toBe("Same content. Same structure. Different visual languages.");
+    expect(subtitle?.parentId).toBe("s-504a05" as ShapeId);
+  });
+
+  it("contains hero section with updated copy and tagline", () => {
+    const doc = createDefaultSampleDocument();
+    const heading = doc.shapes["s-7a14" as ShapeId];
+    expect(heading?.content).toBe("Draw what you imagine. Give it meaning. Build with AI.");
+
+    const subhead = doc.shapes["s-7a12" as ShapeId];
+    expect(subhead?.content).toContain("OpenDraw is a visual design canvas");
+
+    const tagline = doc.shapes["s-504a01" as ShapeId];
+    expect(tagline?.content).toBe("Simple by default. Powerful by intention.");
+    expect(tagline?.parentId).toBe("s-7a11" as ShapeId);
   });
 
   it("normalizes and computes inspection data for the initial document without throwing", () => {
@@ -118,6 +131,6 @@ describe("createDefaultSampleDocument", () => {
     const rootInspection = computeInspectionData(doc, "s-7a07" as ShapeId, undefined);
     expect(rootInspection.rootShape?.id).toBe("s-7a07");
     expect(rootInspection.rootPlatform).toBe("web");
-    expect(rootInspection.treeNodes.length).toBe(34);
+    expect(rootInspection.treeNodes.length).toBe(27);
   });
 });

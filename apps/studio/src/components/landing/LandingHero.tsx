@@ -37,7 +37,7 @@ export function LandingHero({ theme, onLaunch }: LandingHeroProps): React.JSX.El
           maxWidth: "820px",
         }}
       >
-        Design interfaces visually. Add meaning. Ship code
+        Draw what you imagine. Give it meaning. Build with AI.
       </h1>
 
       {/* Subhead / Bridge text (s-7a12) */}
@@ -51,7 +51,22 @@ export function LandingHero({ theme, onLaunch }: LandingHeroProps): React.JSX.El
           margin: 0,
         }}
       >
-        Open Draw turns canvas wireframes into semantic structure and frontend markup.
+        OpenDraw is a visual design canvas that lets you sketch freely, add intent when needed, and
+        give AI the context to turn your ideas into real interfaces.
+      </p>
+
+      {/* Tagline (s-504a01) */}
+      <p
+        style={{
+          fontFamily: theme.headingFont,
+          color: theme.textPrimary,
+          fontSize: "clamp(16px, 2.2vw, 22px)",
+          fontWeight: 700,
+          lineHeight: 1.4,
+          margin: 0,
+        }}
+      >
+        Simple by default. Powerful by intention.
       </p>
 
       {/* Primary CTA (s-7a13) */}

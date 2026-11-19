@@ -1,49 +1,12 @@
 import React from "react";
-import {
-  LANDING_DESIGN_STYLES,
-  type LandingDesignStyle,
-  type LandingThemeTokens,
-} from "./landing-styles.js";
+import { type LandingDesignStyle, type LandingThemeTokens } from "./landing-styles.js";
+import { LandingStyleSwitcher } from "./LandingStyleSwitcher.js";
 
 export interface LandingFeaturesProps {
   readonly theme: LandingThemeTokens;
   readonly activeStyle: LandingDesignStyle;
   readonly onStyleChange: (style: LandingDesignStyle) => void;
 }
-
-interface StyleFeatureItem {
-  readonly id: LandingDesignStyle;
-  readonly name: string;
-  readonly description: string;
-}
-
-const STYLE_FEATURES: readonly StyleFeatureItem[] = [
-  {
-    id: LANDING_DESIGN_STYLES.minimal,
-    name: "Minimal",
-    description: "Clean, elegant and distraction-free.",
-  },
-  {
-    id: LANDING_DESIGN_STYLES.glass,
-    name: "Glass",
-    description: "Modern, translucent and layered.",
-  },
-  {
-    id: LANDING_DESIGN_STYLES.editorial,
-    name: "Editorial",
-    description: "Typography-driven and expressive.",
-  },
-  {
-    id: LANDING_DESIGN_STYLES.brutalist,
-    name: "Brutalist",
-    description: "Bold, expressive and unconventional.",
-  },
-  {
-    id: LANDING_DESIGN_STYLES.soft,
-    name: "Soft",
-    description: "Warm, tactile and approachable.",
-  },
-];
 
 export function LandingFeatures({
   theme,
@@ -52,23 +15,23 @@ export function LandingFeatures({
 }: LandingFeaturesProps): React.JSX.Element {
   return (
     <section
-      aria-labelledby="features-heading"
+      aria-labelledby="style-switcher-heading"
       style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         textAlign: "center",
         padding: "48px 24px",
-        maxWidth: "1080px",
+        maxWidth: "880px",
         margin: "0 auto",
         width: "100%",
         boxSizing: "border-box",
-        gap: "28px",
+        gap: "20px",
       }}
     >
-      {/* Main Section Heading (s-7a16) */}
+      {/* Section Heading (s-504a07) */}
       <h2
-        id="features-heading"
+        id="style-switcher-heading"
         style={{
           fontFamily: theme.headingFont,
           color: theme.textPrimary,
@@ -78,87 +41,31 @@ export function LandingFeatures({
           lineHeight: 1.25,
         }}
       >
-        Same structure. Different design languages.
+        Experience This WebPage in Different Design Styles
       </h2>
 
-      {/* Style Personality Grid */}
-      <div
+      {/* Interactive Segmented Style Switcher (s-504a06) */}
+      <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+        <LandingStyleSwitcher
+          activeStyle={activeStyle}
+          onStyleChange={onStyleChange}
+          theme={theme}
+        />
+      </div>
+
+      {/* Subhead (s-504a08) */}
+      <p
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-          gap: "16px",
-          width: "100%",
+          fontFamily: theme.bodyFont,
+          color: theme.textSecondary,
+          fontSize: "clamp(15px, 2vw, 18px)",
+          lineHeight: 1.5,
+          margin: 0,
+          maxWidth: "600px",
         }}
       >
-        {STYLE_FEATURES.map((feat) => {
-          const isSelected = activeStyle === feat.id;
-          return (
-            <button
-              key={feat.id}
-              type="button"
-              onClick={() => onStyleChange(feat.id)}
-              aria-pressed={isSelected}
-              style={{
-                ...theme.card,
-                padding: "20px 16px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                textAlign: "left",
-                gap: "8px",
-                cursor: "pointer",
-                outline: isSelected ? `2px solid ${theme.accent}` : "none",
-                outlineOffset: "2px",
-                position: "relative",
-                backgroundColor:
-                  isSelected && theme.id === "glass"
-                    ? "rgba(255, 255, 255, 0.12)"
-                    : theme.card.backgroundColor,
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: theme.headingFont,
-                  fontWeight: 800,
-                  fontSize: "15px",
-                  color: theme.textPrimary,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  width: "100%",
-                }}
-              >
-                <span>{feat.name}</span>
-                {isSelected && (
-                  <span
-                    style={{
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      padding: "2px 6px",
-                      borderRadius: "4px",
-                      backgroundColor: theme.accent,
-                      color: theme.id === "brutalist" ? "#000000" : "#ffffff",
-                    }}
-                  >
-                    Active
-                  </span>
-                )}
-              </div>
-              <div
-                style={{
-                  fontFamily: theme.bodyFont,
-                  fontSize: "13px",
-                  lineHeight: 1.5,
-                  color: theme.textSecondary,
-                }}
-              >
-                {feat.description}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+        Same content. Same structure. Different visual languages.
+      </p>
     </section>
   );
 }

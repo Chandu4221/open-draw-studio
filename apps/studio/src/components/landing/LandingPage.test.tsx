@@ -4,9 +4,9 @@ import { renderToString } from "react-dom/server";
 import { LANDING_DESIGN_STYLES } from "./landing-styles.js";
 import { LandingPage } from "./LandingPage.js";
 import { LandingHero } from "./LandingHero.js";
+import { LandingShowcase } from "./LandingShowcase.js";
 import { LandingFeatures } from "./LandingFeatures.js";
 import { LandingPillars } from "./LandingPillars.js";
-import { LandingClosingCta } from "./LandingClosingCta.js";
 import { LandingFooter } from "./LandingFooter.js";
 import { LandingStyleSwitcher } from "./LandingStyleSwitcher.js";
 import { LANDING_THEMES } from "./landing-themes.js";
@@ -19,15 +19,21 @@ describe("LandingPage", () => {
     expect(html).toContain('data-landing-style="minimal"');
     expect(html).toContain("OpenDraw Studio");
     expect(html).not.toContain("v0.");
-    expect(html).toContain("Design interfaces visually. Add meaning. Ship code");
+    expect(html).toContain("Draw what you imagine. Give it meaning. Build with AI.");
     expect(html).toContain(
-      "Open Draw turns canvas wireframes into semantic structure and frontend markup.",
+      "OpenDraw is a visual design canvas that lets you sketch freely, add intent when needed, and give AI the context to turn your ideas into real interfaces.",
     );
+    expect(html).toContain("Simple by default. Powerful by intention.");
     expect(html).toContain("Try OpenDraw");
-    expect(html).toContain("Same structure. Different design languages.");
+    expect(html).toContain("From Wireframe to Production UI");
+    expect(html).toContain("/assets/showcase/showcase-wireframe.png");
+    expect(html).toContain("/assets/showcase/showcase-rendered.png");
+    expect(html).toContain("Experience This WebPage in Different Design Styles");
+    expect(html).toContain("Same content. Same structure. Different visual languages.");
     expect(html).toContain("More than shapes on a canvas.");
     expect(html).toContain("Draw on a real canvas");
-    expect(html).toContain("Start drawing. Add meaning. Ship the interface.");
+    expect(html).not.toContain("Start drawing. Add meaning. Ship the interface.");
+    expect(html).not.toContain("Open Draw is the canvas between visual design and working markup.");
   });
 
   it("renders with a custom initial design style when specified", () => {
@@ -53,6 +59,17 @@ describe("LandingPage", () => {
       expect(html).toContain(`data-landing-style="${style}"`);
     }
   });
+
+  it("renders top navigation bar without design style switcher", () => {
+    const onLaunch = vi.fn();
+    const html = renderToString(<LandingPage onLaunch={onLaunch} />);
+
+    const headerHtml = html.match(/<header[^>]*>([\s\S]*?)<\/header>/)?.[1] ?? "";
+    expect(headerHtml).toContain("OpenDraw Studio");
+    expect(headerHtml).toContain("Try OpenDraw");
+    expect(headerHtml).not.toContain("STYLE:");
+    expect(headerHtml).not.toContain('aria-label="Design Style Switcher"');
+  });
 });
 
 describe("LandingHero", () => {
@@ -61,16 +78,17 @@ describe("LandingHero", () => {
     const theme = LANDING_THEMES.minimal;
     const html = renderToString(<LandingHero theme={theme} onLaunch={onLaunch} />);
 
-    expect(html).toContain("Design interfaces visually. Add meaning. Ship code");
+    expect(html).toContain("Draw what you imagine. Give it meaning. Build with AI.");
     expect(html).toContain(
-      "Open Draw turns canvas wireframes into semantic structure and frontend markup.",
+      "OpenDraw is a visual design canvas that lets you sketch freely, add intent when needed, and give AI the context to turn your ideas into real interfaces.",
     );
+    expect(html).toContain("Simple by default. Powerful by intention.");
     expect(html).toContain("Try OpenDraw");
   });
 });
 
 describe("LandingFeatures", () => {
-  it("renders all five personality descriptions and the reimagining prompt", () => {
+  it("renders style switcher section with title, switcher, and subtitle", () => {
     const theme = LANDING_THEMES.minimal;
     const onStyleChange = vi.fn();
     const html = renderToString(
@@ -81,17 +99,13 @@ describe("LandingFeatures", () => {
       />,
     );
 
-    expect(html).toContain("Same structure. Different design languages.");
+    expect(html).toContain("Experience This WebPage in Different Design Styles");
+    expect(html).toContain("Same content. Same structure. Different visual languages.");
     expect(html).toContain("Minimal");
-    expect(html).toContain("Clean, elegant and distraction-free.");
     expect(html).toContain("Glass");
-    expect(html).toContain("Modern, translucent and layered.");
     expect(html).toContain("Editorial");
-    expect(html).toContain("Typography-driven and expressive.");
     expect(html).toContain("Brutalist");
-    expect(html).toContain("Bold, expressive and unconventional.");
     expect(html).toContain("Soft");
-    expect(html).toContain("Warm, tactile and approachable.");
   });
 });
 
@@ -113,18 +127,6 @@ describe("LandingPillars", () => {
     expect(html).toContain("04 —");
     expect(html).toContain("Swap styles without redrawing");
     expect(html).toContain("Explore visual languages on the same underlying structure.");
-  });
-});
-
-describe("LandingClosingCta", () => {
-  it("renders the final call to action with launch app button", () => {
-    const theme = LANDING_THEMES.minimal;
-    const onLaunch = vi.fn();
-    const html = renderToString(<LandingClosingCta theme={theme} onLaunch={onLaunch} />);
-
-    expect(html).toContain("Start drawing. Add meaning. Ship the interface.");
-    expect(html).toContain("Open Draw is the canvas between visual design and working markup.");
-    expect(html).toContain("Try OpenDraw");
   });
 });
 
@@ -155,7 +157,25 @@ describe("LandingStyleSwitcher", () => {
     );
 
     expect(html).toContain('aria-label="Design Style Switcher"');
+    expect(html).not.toContain("Style:");
+    expect(html).not.toContain("STYLE:");
     // Button for Glass should be aria-pressed="true"
     expect(html).toMatch(/<button[^>]*aria-pressed="true"[^>]*>\s*Glass\s*<\/button>/);
+  });
+});
+
+describe("LandingShowcase", () => {
+  it("renders the wireframe-to-rendered UI comparison with both images and captions", () => {
+    const theme = LANDING_THEMES.minimal;
+    const html = renderToString(<LandingShowcase theme={theme} />);
+
+    expect(html).toContain("From Wireframe to Production UI");
+    expect(html).toContain("Semantic structure. Production output.");
+    expect(html).toContain("/assets/showcase/showcase-wireframe.png");
+    expect(html).toContain("/assets/showcase/showcase-rendered.png");
+    expect(html).toContain('alt="OpenDraw canvas wireframe with semantic tags"');
+    expect(html).toContain('alt="Rendered production UI component"');
+    expect(html).toContain("Sketch Structure &amp; Assign Meaning");
+    expect(html).toContain("Realized, Production-Ready Markup");
   });
 });
