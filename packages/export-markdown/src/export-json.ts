@@ -6,7 +6,6 @@ import {
   ROOT_ID,
   SHAPE_KINDS,
   type ShapeId,
-  shapeListInOrder,
   type Document,
   type LineShape,
   type PenPathShape,
@@ -19,8 +18,8 @@ import {
   SEMANTICS_REGISTRY_VERSION,
   buildChildIndex,
   getShapeHiddenOn,
-  getShapeOrder,
   getShapeSemantic,
+  sortSiblingShapes,
   PLUGIN_DARK_MODE,
   PLUGIN_ROOT_PLATFORM,
   PLUGIN_ROOT_ROLE,
@@ -102,11 +101,7 @@ function getExportedShapes(doc: Document, options?: JsonExportOptions): readonly
     const result: Shape[] = [root];
     const walk = (parentId: ShapeId): void => {
       const children = [...(childIndex.get(parentId) ?? [])];
-      if (deviceType !== undefined) {
-        children.sort(
-          (a, b) => (getShapeOrder(a, deviceType) ?? 0) - (getShapeOrder(b, deviceType) ?? 0),
-        );
-      }
+      sortSiblingShapes(children, deviceType);
       for (const child of children) {
         result.push(child);
         walk(child.id);
@@ -116,17 +111,11 @@ function getExportedShapes(doc: Document, options?: JsonExportOptions): readonly
     return result;
   }
 
-  if (deviceType === undefined) {
-    return shapeListInOrder(doc);
-  }
-
   const childIndex = buildChildIndex(doc);
   const result: Shape[] = [];
   const walk = (parentId: ShapeId): void => {
     const children = [...(childIndex.get(parentId) ?? [])];
-    children.sort(
-      (a, b) => (getShapeOrder(a, deviceType) ?? 0) - (getShapeOrder(b, deviceType) ?? 0),
-    );
+    sortSiblingShapes(children, deviceType);
     for (const child of children) {
       result.push(child);
       walk(child.id);

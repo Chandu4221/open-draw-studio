@@ -43,16 +43,23 @@ export function getShapeHiddenOn(shape: Shape | undefined): readonly DeviceType[
 }
 
 /**
- * Resolves responsive order for a given deviceType from pluginData or legacy meta.
+ * Resolves responsive order for a given deviceType (or default order) from pluginData or legacy meta.
  */
 export function getShapeOrder(
   shape: Shape | undefined,
-  deviceType: DeviceType,
+  deviceType?: DeviceType,
 ): number | undefined {
   if (!shape) return undefined;
   const responsive = shape.meta.pluginData?.[PLUGIN_RESPONSIVE] as ResponsivePluginData | undefined;
-  if (responsive?.order?.[deviceType] !== undefined) {
-    return responsive.order[deviceType];
+  if (deviceType !== undefined) {
+    if (responsive?.order?.[deviceType] !== undefined) {
+      return responsive.order[deviceType];
+    }
+    const legacy = (shape.meta as { order?: Readonly<Record<string, number>> }).order?.[deviceType];
+    if (legacy !== undefined) return legacy;
   }
-  return (shape.meta as { order?: Readonly<Record<string, number>> }).order?.[deviceType];
+  if (responsive?.order?.default !== undefined) {
+    return responsive.order.default;
+  }
+  return (shape.meta as { order?: Readonly<Record<string, number>> }).order?.default;
 }

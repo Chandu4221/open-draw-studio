@@ -514,6 +514,41 @@
   flex-shrink: 0;
 }
 
+.od-tree-reorder-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.od-tree-reorder-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--od-text-secondary);
+  border-radius: var(--od-radius-sm);
+  cursor: pointer;
+  transition:
+    color var(--od-transition),
+    background-color var(--od-transition),
+    border-color var(--od-transition);
+}
+
+.od-tree-reorder-btn:hover:not(:disabled) {
+  background: var(--od-bg-hover);
+  border-color: var(--od-border);
+  color: var(--od-text);
+}
+
+.od-tree-reorder-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
 /* Tree Guide Rails */
 .od-tree-guide {
   display: inline-block;

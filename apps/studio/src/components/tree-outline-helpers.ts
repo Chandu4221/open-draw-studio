@@ -59,3 +59,30 @@ export function determineDotCategory(node: TreeNode): DotCategory {
   if (cat === "content" || cat === "feedback") return "content";
   return "primitive";
 }
+
+export interface SiblingIndexInfo {
+  readonly index: number;
+  readonly total: number;
+}
+
+export function computeSiblingIndices(
+  treeNodes: TreeNodes,
+): ReadonlyMap<ShapeId, SiblingIndexInfo> {
+  const parentChildren = new Map<ShapeId, ShapeId[]>();
+  for (const node of treeNodes) {
+    const pid = node.shape.parentId;
+    const list = parentChildren.get(pid);
+    if (list === undefined) {
+      parentChildren.set(pid, [node.shape.id]);
+    } else {
+      list.push(node.shape.id);
+    }
+  }
+  const map = new Map<ShapeId, SiblingIndexInfo>();
+  for (const children of parentChildren.values()) {
+    for (let i = 0; i < children.length; i++) {
+      map.set(children[i]!, { index: i, total: children.length });
+    }
+  }
+  return map;
+}

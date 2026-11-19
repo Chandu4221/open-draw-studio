@@ -10,11 +10,14 @@ import { OdBadge, OdIcon } from "@open-draw/ui";
 
 import {
   computeContainerIds,
+  computeSiblingIndices,
   determineDotCategory,
   filterVisibleTreeNodes,
   findAncestorIds,
   type TreeNodes,
 } from "./tree-outline-helpers";
+import { TreeReorderButtons } from "./TreeReorderButtons";
+import { TreeScopeBanner } from "./TreeScopeBanner";
 
 export interface TreeOutlineProps {
   readonly treeNodes: TreeNodes;
@@ -29,6 +32,7 @@ export interface TreeOutlineProps {
   readonly collapsedIds?: ReadonlySet<ShapeId> | undefined;
   readonly onToggleCollapse?: ((id: ShapeId) => void) | undefined;
   readonly onContextMenu?: ((id: ShapeId, event: React.MouseEvent) => void) | undefined;
+  readonly onReorderSibling?: ((shapeId: ShapeId, direction: "up" | "down") => void) | undefined;
 }
 
 export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
@@ -45,6 +49,7 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
     collapsedIds: controlledCollapsedIds,
     onToggleCollapse,
     onContextMenu,
+    onReorderSibling,
   } = props;
 
   const [internalCollapsedIds, setInternalCollapsedIds] = useState<ReadonlySet<ShapeId>>(
@@ -69,6 +74,7 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
 
   const collapsedIds = controlledCollapsedIds ?? activeInternalCollapsed;
   const containerIds = useMemo(() => computeContainerIds(treeNodes), [treeNodes]);
+  const siblingIndices = useMemo(() => computeSiblingIndices(treeNodes), [treeNodes]);
 
   const toggleCollapse = (id: ShapeId) => {
     if (onToggleCollapse) {
@@ -97,33 +103,7 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
         </div>
       )}
       {isScopedToRoot && activeRootTitle && (
-        <div className="od-tree-scope-banner">
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--od-4)", minWidth: 0 }}>
-            <span style={{ color: "var(--od-text-secondary)", flexShrink: 0 }}>Scope:</span>
-            <span
-              style={{
-                fontWeight: 600,
-                color: "var(--od-text)",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {activeRootTitle}
-            </span>
-          </div>
-          {onClearScope && (
-            <button
-              type="button"
-              className="od-btn od-btn--ghost"
-              style={{ height: "20px", padding: "0 var(--od-4)", fontSize: "10px", flexShrink: 0 }}
-              onClick={onClearScope}
-              title="Show all screens on canvas"
-            >
-              All Screens
-            </button>
-          )}
-        </div>
+        <TreeScopeBanner activeRootTitle={activeRootTitle} onClearScope={onClearScope} />
       )}
       <div className="od-tree-scroll">
         {visibleNodes.length === 0 ? (
@@ -135,9 +115,8 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
             const isSelected = node.shape.id === selectedShapeId;
             const isHovered = !isSelected && node.shape.id === hoveredShapeId;
             const itemName =
-              node.shape.label && node.shape.label.trim().length > 0
-                ? node.shape.label
-                : (SHAPE_KIND_LABELS[node.shape.kind as BuiltinShapeKind] ?? node.shape.kind);
+              node.shape.label?.trim() ||
+              (SHAPE_KIND_LABELS[node.shape.kind as BuiltinShapeKind] ?? node.shape.kind);
             const semanticChip =
               node.semanticType ??
               node.semantic?.displayName ??
@@ -145,6 +124,10 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
             const isContainer = containerIds.has(node.shape.id);
             const isCollapsed = collapsedIds.has(node.shape.id);
             const dotCategory = determineDotCategory(node);
+            const siblingInfo = siblingIndices.get(node.shape.id);
+            const canMoveUp = siblingInfo ? siblingInfo.index > 0 : false;
+            const canMoveDown = siblingInfo ? siblingInfo.index < siblingInfo.total - 1 : false;
+            const hasSiblings = siblingInfo ? siblingInfo.total > 1 : false;
 
             return (
               <div
@@ -207,6 +190,16 @@ export function TreeOutline(props: TreeOutlineProps): React.JSX.Element {
                   <span className="od-tree-item__label">{itemName}</span>
                 </div>
                 <div className="od-tree-item__right">
+                  {onReorderSibling && hasSiblings && (
+                    <TreeReorderButtons
+                      itemName={itemName}
+                      canMoveUp={canMoveUp}
+                      canMoveDown={canMoveDown}
+                      isVisible={isSelected || isHovered}
+                      onMoveUp={() => onReorderSibling(node.shape.id, "up")}
+                      onMoveDown={() => onReorderSibling(node.shape.id, "down")}
+                    />
+                  )}
                   {semanticChip && (
                     <OdBadge
                       variant="outline"

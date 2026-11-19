@@ -42,6 +42,7 @@ import { useToolbarActions } from "../use-toolbar-actions";
 import { loadInitialDocument, saveDraftDocument, useStudioDraft } from "../use-studio-draft";
 import { normalizeStudioDocument } from "../normalize-document";
 import { useUiTheme } from "../use-ui-theme";
+import { buildSiblingReorderCommands } from "../reorder-siblings";
 
 export interface StudioShellProps {
   readonly onBackToLanding?: () => void;
@@ -215,9 +216,12 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
     setSelectedShapeId(id);
   };
 
-  const render = (): void => editorRef.current?.render();
-  const commit = (cmds: readonly Command[], opts?: { record?: boolean }): void =>
+  const render = useCallback((): void => {
+    editorRef.current?.render();
+  }, []);
+  const commit = useCallback((cmds: readonly Command[], opts?: { record?: boolean }): void => {
     editorRef.current?.execute(cmds, opts);
+  }, []);
 
   const toolbarActions = useToolbarActions({
     getDoc,
@@ -291,6 +295,17 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
     onNotify: (text) => toast.push({ type: "info", text }),
   });
 
+  const handleReorderSibling = useCallback(
+    (shapeId: ShapeId, direction: "up" | "down") => {
+      const cmds = buildSiblingReorderCommands(doc, shapeId, direction, activeDeviceType);
+      if (cmds && cmds.length > 0) {
+        commit(cmds);
+        render();
+      }
+    },
+    [doc, activeDeviceType, commit, render],
+  );
+
   const emptyDoc = Object.keys(doc.shapes).length === 0;
 
   return (
@@ -340,6 +355,7 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
           hoveredShapeId={hoveredShapeId}
           onHoverShape={setHoveredShapeId}
           onContextMenu={(id, e) => contextMenu.openContextMenu(e, id)}
+          onReorderSibling={handleReorderSibling}
           onClose={() => setShowSidebar(false)}
         />
       }

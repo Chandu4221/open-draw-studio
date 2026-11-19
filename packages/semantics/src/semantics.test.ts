@@ -569,6 +569,83 @@ describe("hierarchical tree walk", () => {
     expect(nodes).toHaveLength(2001);
     expect(duration).toBeLessThan(100);
   });
+
+  it("sorts sibling shapes by spatial coordinates (top-to-bottom, left-to-right) when meta.order is absent", () => {
+    const pageId = parseShapeId("page-spatial");
+    const topCard = parseShapeId("card-1-top");
+    const bottomCard = parseShapeId("card-3-bottom");
+    const middleCard = parseShapeId("card-2-middle");
+
+    // middleCard is created LAST in document insertion order, but positioned between topCard and bottomCard
+    const doc = createDocument([
+      createPage(pageId, { x: 0, y: 0, width: 800, height: 1200 }),
+      createRect(topCard, { x: 20, y: 100, width: 200, height: 100 }, { parent: pageId }),
+      createRect(bottomCard, { x: 20, y: 600, width: 200, height: 100 }, { parent: pageId }),
+      createRect(middleCard, { x: 20, y: 300, width: 200, height: 100 }, { parent: pageId }),
+    ]);
+
+    const nodes = walkSemanticTree(doc, pageId);
+    expect(nodes).toHaveLength(4);
+    expect(nodes[0]?.shape.id).toBe(pageId);
+    expect(nodes[1]?.shape.id).toBe(topCard);
+    expect(nodes[2]?.shape.id).toBe(middleCard);
+    expect(nodes[3]?.shape.id).toBe(bottomCard);
+  });
+
+  it("preserves explicit meta.order over spatial coordinates (R-027)", () => {
+    const pageId = parseShapeId("page-order-priority");
+    const cardTop = parseShapeId("card-top");
+    const cardBottom = parseShapeId("card-bottom");
+
+    // cardTop is at y=100 with mobile order 2, cardBottom is at y=600 with mobile order 1
+    const doc = createDocument([
+      createPage(pageId, { x: 0, y: 0, width: 800, height: 1200 }),
+      createRect(
+        cardTop,
+        { x: 20, y: 100, width: 200, height: 100 },
+        { parent: pageId, meta: { order: { mobile: 2 } } },
+      ),
+      createRect(
+        cardBottom,
+        { x: 20, y: 600, width: 200, height: 100 },
+        { parent: pageId, meta: { order: { mobile: 1 } } },
+      ),
+    ]);
+
+    const nodes = walkSemanticTree(doc, pageId, undefined, DEVICE_TYPES.mobile);
+    expect(nodes).toHaveLength(3);
+    expect(nodes[0]?.shape.id).toBe(pageId);
+    // On mobile, explicit order 1 beats visual y=100
+    expect(nodes[1]?.shape.id).toBe(cardBottom);
+    expect(nodes[2]?.shape.id).toBe(cardTop);
+  });
+
+  it("respects default order when deviceType is undefined", () => {
+    const pageId = parseShapeId("page-default-order");
+    const cardTop = parseShapeId("card-top");
+    const cardBottom = parseShapeId("card-bottom");
+
+    // cardTop is at visual y=100 with default order 2, cardBottom is at y=600 with default order 1
+    const doc = createDocument([
+      createPage(pageId, { x: 0, y: 0, width: 800, height: 1200 }),
+      createRect(
+        cardTop,
+        { x: 20, y: 100, width: 200, height: 100 },
+        { parent: pageId, meta: { order: { default: 2 } } },
+      ),
+      createRect(
+        cardBottom,
+        { x: 20, y: 600, width: 200, height: 100 },
+        { parent: pageId, meta: { order: { default: 1 } } },
+      ),
+    ]);
+
+    const nodes = walkSemanticTree(doc, pageId);
+    expect(nodes).toHaveLength(3);
+    expect(nodes[0]?.shape.id).toBe(pageId);
+    expect(nodes[1]?.shape.id).toBe(cardBottom);
+    expect(nodes[2]?.shape.id).toBe(cardTop);
+  });
 });
 
 describe("theme & dark mode resolution (Idea 4, 6, R-026)", () => {
