@@ -3,7 +3,6 @@ import { SAMPLE_NAV_SHAPES } from "./default-sample-shapes-nav";
 import { SAMPLE_HERO_SHAPES } from "./default-sample-shapes-hero";
 import { SAMPLE_STYLES_SHAPES } from "./default-sample-shapes-styles";
 import { SAMPLE_FEATURES_SHAPES } from "./default-sample-shapes-features";
-import { SAMPLE_CTA_SHAPES } from "./default-sample-shapes-cta";
 
 export const DEFAULT_SAMPLE_AI_DIRECTIVES: readonly string[] = [
   "- **Creativity Level**: Level 3 — Balanced",
@@ -22,7 +21,7 @@ export const DEFAULT_SAMPLE_AI_DIRECTIVES: readonly string[] = [
 
 /**
  * Default sample OpenDraw Studio Landing Page document pre-loaded on a fresh studio canvas.
- * Dogfoods OpenDraw Studio's own frontpage wireframe with 31 shapes and N-level nesting.
+ * Dogfoods OpenDraw Studio's own frontpage wireframe with 27 shapes and N-level nesting.
  */
 export function createDefaultSampleDocument(): Document {
   const shapes: readonly Shape[] = [
@@ -30,7 +29,6 @@ export function createDefaultSampleDocument(): Document {
     ...SAMPLE_HERO_SHAPES,
     ...SAMPLE_STYLES_SHAPES,
     ...SAMPLE_FEATURES_SHAPES,
-    ...SAMPLE_CTA_SHAPES,
   ];
 
   return createDocument(shapes);

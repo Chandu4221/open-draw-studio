@@ -6,7 +6,6 @@ import { LandingPage } from "./LandingPage.js";
 import { LandingHero } from "./LandingHero.js";
 import { LandingFeatures } from "./LandingFeatures.js";
 import { LandingPillars } from "./LandingPillars.js";
-import { LandingClosingCta } from "./LandingClosingCta.js";
 import { LandingFooter } from "./LandingFooter.js";
 import { LandingStyleSwitcher } from "./LandingStyleSwitcher.js";
 import { LANDING_THEMES } from "./landing-themes.js";
@@ -29,7 +28,8 @@ describe("LandingPage", () => {
     expect(html).toContain("Same content. Same structure. Different visual languages.");
     expect(html).toContain("More than shapes on a canvas.");
     expect(html).toContain("Draw on a real canvas");
-    expect(html).toContain("Start drawing. Add meaning. Ship the interface.");
+    expect(html).not.toContain("Start drawing. Add meaning. Ship the interface.");
+    expect(html).not.toContain("Open Draw is the canvas between visual design and working markup.");
   });
 
   it("renders with a custom initial design style when specified", () => {
@@ -123,18 +123,6 @@ describe("LandingPillars", () => {
     expect(html).toContain("04 —");
     expect(html).toContain("Swap styles without redrawing");
     expect(html).toContain("Explore visual languages on the same underlying structure.");
-  });
-});
-
-describe("LandingClosingCta", () => {
-  it("renders the final call to action with launch app button", () => {
-    const theme = LANDING_THEMES.minimal;
-    const onLaunch = vi.fn();
-    const html = renderToString(<LandingClosingCta theme={theme} onLaunch={onLaunch} />);
-
-    expect(html).toContain("Start drawing. Add meaning. Ship the interface.");
-    expect(html).toContain("Open Draw is the canvas between visual design and working markup.");
-    expect(html).toContain("Try OpenDraw");
   });
 });
 

@@ -7,7 +7,6 @@ import {
 import { LandingHero } from "./LandingHero.js";
 import { LandingFeatures } from "./LandingFeatures.js";
 import { LandingPillars } from "./LandingPillars.js";
-import { LandingClosingCta } from "./LandingClosingCta.js";
 import { LandingFooter } from "./LandingFooter.js";
 
 export interface LandingPageProps {
@@ -122,12 +121,6 @@ export function LandingPage({
         />
 
         <LandingPillars theme={theme} />
-
-        <div
-          style={{ margin: "0 auto", maxWidth: "960px", width: "90%", ...theme.sectionDivider }}
-        />
-
-        <LandingClosingCta theme={theme} onLaunch={onLaunch} />
       </main>
 
       {/* Footer */}

@@ -13,10 +13,10 @@ import { normalizeStudioDocument } from "./normalize-document.js";
 import { computeInspectionData } from "./use-inspection-data.js";
 
 describe("createDefaultSampleDocument", () => {
-  it("creates a valid document containing the 31 sample landing page wireframe shapes", () => {
+  it("creates a valid document containing the 27 sample landing page wireframe shapes", () => {
     const doc = createDefaultSampleDocument();
     expect(doc.schema.version).toBe(1);
-    expect(Object.keys(doc.shapes)).toHaveLength(31);
+    expect(Object.keys(doc.shapes)).toHaveLength(27);
   });
 
   it("configures the root landing page shape with screen role, web platform, and brutalism style", () => {
@@ -34,14 +34,13 @@ describe("createDefaultSampleDocument", () => {
     expect(root?.meta.pluginData?.[PLUGIN_DESIGN_STYLE]).toBe("brutalism");
   });
 
-  it("nests top-level sections (navbar, hero, styles, pillars, closing cta) under the root", () => {
+  it("nests top-level sections (navbar, hero, styles, pillars) under the root", () => {
     const doc = createDefaultSampleDocument();
     const sectionIds: ShapeId[] = [
       "s-7a09" as ShapeId, // navbar
       "s-7a11" as ShapeId, // hero
       "s-504a05" as ShapeId, // styles section
       "s-7a29" as ShapeId, // pillars section
-      "s-7a37" as ShapeId, // closing cta section
     ];
 
     for (const id of sectionIds) {
@@ -55,7 +54,7 @@ describe("createDefaultSampleDocument", () => {
     expect(getShapeSemantic(doc.shapes["s-7a11" as ShapeId]!)?.id).toBe("section");
     expect(getShapeSemantic(doc.shapes["s-504a05" as ShapeId]!)?.id).toBe("section");
     expect(getShapeSemantic(doc.shapes["s-7a29" as ShapeId]!)?.id).toBe("section");
-    expect(getShapeSemantic(doc.shapes["s-7a37" as ShapeId]!)?.id).toBe("section");
+    expect(doc.shapes["s-7a37" as ShapeId]).toBeUndefined();
   });
 
   it("supports N-level deep nesting across sections, cards, and content elements", () => {
@@ -132,6 +131,6 @@ describe("createDefaultSampleDocument", () => {
     const rootInspection = computeInspectionData(doc, "s-7a07" as ShapeId, undefined);
     expect(rootInspection.rootShape?.id).toBe("s-7a07");
     expect(rootInspection.rootPlatform).toBe("web");
-    expect(rootInspection.treeNodes.length).toBe(31);
+    expect(rootInspection.treeNodes.length).toBe(27);
   });
 });
