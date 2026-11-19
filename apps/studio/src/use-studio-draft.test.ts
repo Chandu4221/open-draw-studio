@@ -46,7 +46,7 @@ describe("useStudioDraft", () => {
 
   it("loads default sample component document when localStorage has no draft", () => {
     const doc = loadInitialDocument();
-    expect(Object.keys(doc.shapes)).toHaveLength(34);
+    expect(Object.keys(doc.shapes)).toHaveLength(31);
     expect(doc.shapes["s-7a07" as ShapeId]?.label).toBe("OpenDraw Studio Landing Page");
     expect(doc.shapes["s-7a0a" as ShapeId]?.content).toBe("Open Draw");
   });
@@ -63,7 +63,7 @@ describe("useStudioDraft", () => {
   it("recovers gracefully to default sample document if localStorage draft is corrupted", () => {
     store[DRAFT_STORAGE_KEY] = "{ corrupted json ";
     const loaded = loadInitialDocument();
-    expect(Object.keys(loaded.shapes)).toHaveLength(34);
+    expect(Object.keys(loaded.shapes)).toHaveLength(31);
     expect(loaded.shapes["s-7a07" as ShapeId]?.label).toBe("OpenDraw Studio Landing Page");
   });
 
