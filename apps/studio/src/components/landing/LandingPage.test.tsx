@@ -55,6 +55,17 @@ describe("LandingPage", () => {
       expect(html).toContain(`data-landing-style="${style}"`);
     }
   });
+
+  it("renders top navigation bar without design style switcher", () => {
+    const onLaunch = vi.fn();
+    const html = renderToString(<LandingPage onLaunch={onLaunch} />);
+
+    const headerHtml = html.match(/<header[^>]*>([\s\S]*?)<\/header>/)?.[1] ?? "";
+    expect(headerHtml).toContain("OpenDraw Studio");
+    expect(headerHtml).toContain("Try OpenDraw");
+    expect(headerHtml).not.toContain("STYLE:");
+    expect(headerHtml).not.toContain('aria-label="Design Style Switcher"');
+  });
 });
 
 describe("LandingHero", () => {

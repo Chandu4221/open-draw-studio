@@ -4,7 +4,6 @@ import {
   LANDING_THEMES,
   type LandingDesignStyle,
 } from "./landing-styles.js";
-import { LandingStyleSwitcher } from "./LandingStyleSwitcher.js";
 import { LandingHero } from "./LandingHero.js";
 import { LandingFeatures } from "./LandingFeatures.js";
 import { LandingPillars } from "./LandingPillars.js";
@@ -83,13 +82,8 @@ export function LandingPage({
           </span>
         </div>
 
-        {/* Global Style Switcher in Header */}
+        {/* Navigation Action */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <LandingStyleSwitcher
-            activeStyle={activeStyle}
-            onStyleChange={setActiveStyle}
-            theme={theme}
-          />
           <button
             type="button"
             onClick={onLaunch}
