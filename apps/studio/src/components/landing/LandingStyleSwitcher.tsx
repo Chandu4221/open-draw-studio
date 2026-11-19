@@ -171,19 +171,6 @@ export function LandingStyleSwitcher({
 
   return (
     <div role="region" aria-label="Design Style Switcher" style={getContainerStyle()}>
-      <span
-        style={{
-          fontSize: "11px",
-          fontWeight: 700,
-          color: theme.textMuted,
-          padding: "0 8px",
-          textTransform: "uppercase",
-          letterSpacing: "0.06em",
-        }}
-      >
-        Style:
-      </span>
-
       {stylesList.map((styleKey) => {
         const isActive = activeStyle === styleKey;
         const label = styleKey.charAt(0).toUpperCase() + styleKey.slice(1);

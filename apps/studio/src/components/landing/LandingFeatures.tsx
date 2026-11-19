@@ -41,7 +41,7 @@ export function LandingFeatures({
           lineHeight: 1.25,
         }}
       >
-        Experience This page in
+        Experience This WebPage in Different Design Styles
       </h2>
 
       {/* Interactive Segmented Style Switcher (s-504a06) */}

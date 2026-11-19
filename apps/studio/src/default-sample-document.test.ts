@@ -92,7 +92,7 @@ describe("createDefaultSampleDocument", () => {
     expect(section?.parentId).toBe("s-7a07" as ShapeId);
 
     const title = doc.shapes["s-504a07" as ShapeId];
-    expect(title?.content).toBe("Experience This page in");
+    expect(title?.content).toBe("Experience This WebPage in Different Design Styles");
     expect(title?.parentId).toBe("s-504a05" as ShapeId);
 
     const control = doc.shapes["s-504a06" as ShapeId];

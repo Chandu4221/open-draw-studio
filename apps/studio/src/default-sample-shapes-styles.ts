@@ -33,7 +33,7 @@ export const SAMPLE_STYLES_SHAPES: readonly Shape[] = [
       width: 553.63,
       height: 32,
     },
-    content: "Experience This page in",
+    content: "Experience This WebPage in Different Design Styles",
     meta: {
       order: {},
       semantic: { id: "text" },

@@ -25,7 +25,7 @@ describe("LandingPage", () => {
     );
     expect(html).toContain("Simple by default. Powerful by intention.");
     expect(html).toContain("Try OpenDraw");
-    expect(html).toContain("Experience This page in");
+    expect(html).toContain("Experience This WebPage in Different Design Styles");
     expect(html).toContain("Same content. Same structure. Different visual languages.");
     expect(html).toContain("More than shapes on a canvas.");
     expect(html).toContain("Draw on a real canvas");
@@ -95,7 +95,7 @@ describe("LandingFeatures", () => {
       />,
     );
 
-    expect(html).toContain("Experience This page in");
+    expect(html).toContain("Experience This WebPage in Different Design Styles");
     expect(html).toContain("Same content. Same structure. Different visual languages.");
     expect(html).toContain("Minimal");
     expect(html).toContain("Glass");
@@ -165,6 +165,8 @@ describe("LandingStyleSwitcher", () => {
     );
 
     expect(html).toContain('aria-label="Design Style Switcher"');
+    expect(html).not.toContain("Style:");
+    expect(html).not.toContain("STYLE:");
     // Button for Glass should be aria-pressed="true"
     expect(html).toMatch(/<button[^>]*aria-pressed="true"[^>]*>\s*Glass\s*<\/button>/);
   });
