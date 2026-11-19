@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import React from "react";
+import { renderToString } from "react-dom/server";
 import {
   ICONS,
   ICON_IDS,
@@ -221,5 +223,25 @@ describe("accessibility and design tokens", () => {
     expect(css).toMatch(/\.od-canvas-overlay-bottom-left\s*\{[^}]*left:\s*var\(--od-16\);/);
     expect(css).toMatch(/\.od-shortcuts-trigger\s*\{[^}]*border-radius:\s*var\(--od-12\);/);
     expect(css).toMatch(/\.od-kbd\s*\{[^}]*font-family:\s*var\(--od-font-mono\);/);
+    expect(css).toMatch(/\.od-btn--outline\s*\{/);
+  });
+});
+
+describe("OdButton", () => {
+  it("renders with correct variant classes including outline", () => {
+    const htmlOutline = renderToString(
+      React.createElement(OdButton, { variant: "outline" }, "Preview"),
+    );
+    expect(htmlOutline).toContain("od-btn");
+    expect(htmlOutline).toContain("od-btn--outline");
+
+    const htmlPrimary = renderToString(
+      React.createElement(OdButton, { variant: "primary" }, "Export"),
+    );
+    expect(htmlPrimary).toContain("od-btn--primary");
+
+    const htmlDefault = renderToString(React.createElement(OdButton, {}, "Default"));
+    expect(htmlDefault).toContain("od-btn");
+    expect(htmlDefault).not.toContain("od-btn--");
   });
 });

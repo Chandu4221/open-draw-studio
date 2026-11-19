@@ -3,7 +3,7 @@ import { OdIcon } from "./icons/icon";
 import type { IconId } from "./icons/icons";
 
 export interface OdButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  readonly variant?: "default" | "primary" | "ghost";
+  readonly variant?: "default" | "primary" | "ghost" | "outline";
   readonly children?: ReactNode;
 }
 
@@ -14,7 +14,13 @@ export const OdButton: FC<OdButtonProps> = ({
   ...props
 }) => {
   const variantClass =
-    variant === "primary" ? "od-btn--primary" : variant === "ghost" ? "od-btn--ghost" : "";
+    variant === "primary"
+      ? "od-btn--primary"
+      : variant === "ghost"
+        ? "od-btn--ghost"
+        : variant === "outline"
+          ? "od-btn--outline"
+          : "";
   const combinedClass = ["od-btn", variantClass, className].filter(Boolean).join(" ");
 
   return (

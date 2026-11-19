@@ -108,6 +108,16 @@
   opacity: 0.88;
   color: var(--od-text-on-accent);
 }
+.od-btn--outline {
+  background-color: transparent;
+  border-color: var(--od-border);
+  color: var(--od-text);
+}
+.od-btn--outline:hover {
+  background-color: var(--od-accent-soft);
+  border-color: var(--od-border-strong);
+  color: var(--od-text);
+}
 .od-btn--ghost,
 .od-icon-btn--ghost {
   background-color: transparent;
