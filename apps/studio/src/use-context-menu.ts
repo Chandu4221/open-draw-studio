@@ -18,6 +18,10 @@ export {
 export interface UseContextMenuProps {
   readonly getEditor: () => Editor | null;
   readonly doc: Document;
+  readonly onCut?: (() => void) | undefined;
+  readonly onCopy?: (() => void) | undefined;
+  readonly onPaste?: (() => void) | undefined;
+  readonly canPaste?: boolean | undefined;
   readonly onDuplicate?: (() => void) | undefined;
   readonly onDelete?: (() => void) | undefined;
   readonly onNotify?: ((text: string) => void) | undefined;
@@ -42,7 +46,8 @@ export interface UseContextMenuResult {
 }
 
 export function useContextMenu(props: UseContextMenuProps): UseContextMenuResult {
-  const { getEditor, doc, onDuplicate, onDelete, onNotify } = props;
+  const { getEditor, doc, onCut, onCopy, onPaste, canPaste, onDuplicate, onDelete, onNotify } =
+    props;
   const [state, setState] = useState<ContextMenuState>({
     isOpen: false,
     x: 0,
@@ -153,6 +158,10 @@ export function useContextMenu(props: UseContextMenuProps): UseContextMenuResult
         onBringForward: handleBringForward,
         onSendBackward: handleSendBackward,
         onSendToBack: handleSendToBack,
+        onCut,
+        onCopy,
+        onPaste,
+        canPaste,
         onDuplicate,
         onDelete,
         onCopyId: handleCopyId,
@@ -168,6 +177,10 @@ export function useContextMenu(props: UseContextMenuProps): UseContextMenuResult
       handleBringForward,
       handleSendBackward,
       handleSendToBack,
+      onCut,
+      onCopy,
+      onPaste,
+      canPaste,
       onDuplicate,
       onDelete,
       handleCopyId,

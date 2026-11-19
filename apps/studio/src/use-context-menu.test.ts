@@ -107,6 +107,73 @@ describe("useContextMenu", () => {
       navigationGroup.items[0]?.onClick();
       expect(onResetZoom).toHaveBeenCalledTimes(1);
     });
+
+    it("includes cut, copy, and paste items with correct shortcuts and disabled state when provided", () => {
+      const onCut = vi.fn();
+      const onCopy = vi.fn();
+      const onPaste = vi.fn();
+
+      const groups = buildContextMenuGroups({
+        isBackground: false,
+        targetShapeIds: [shapeId1],
+        onCut,
+        onCopy,
+        onPaste,
+        canPaste: false,
+      });
+
+      expect(groups).toHaveLength(1);
+      const editGroup = groups[0];
+      expect(editGroup).toBeDefined();
+      if (!editGroup) return;
+
+      const items = editGroup.items;
+      expect(items.map((i) => i.id)).toEqual(["cut", "copy", "paste"]);
+
+      const cutItem = items.find((i) => i.id === "cut");
+      const copyItem = items.find((i) => i.id === "copy");
+      const pasteItem = items.find((i) => i.id === "paste");
+
+      expect(cutItem).toBeDefined();
+      expect(copyItem).toBeDefined();
+      expect(pasteItem).toBeDefined();
+
+      expect(pasteItem?.disabled).toBe(true);
+
+      cutItem?.onClick();
+      expect(onCut).toHaveBeenCalledTimes(1);
+
+      copyItem?.onClick();
+      expect(onCopy).toHaveBeenCalledTimes(1);
+
+      pasteItem?.onClick();
+      expect(onPaste).toHaveBeenCalledTimes(1);
+    });
+
+    it("includes paste item in canvas background group with disabled state reflecting canPaste", () => {
+      const onPaste = vi.fn();
+      const onSelectAll = vi.fn();
+
+      const groups = buildContextMenuGroups({
+        isBackground: true,
+        targetShapeIds: [],
+        onPaste,
+        canPaste: true,
+        onSelectAll,
+      });
+
+      expect(groups).toHaveLength(1);
+      const actionGroup = groups[0];
+      expect(actionGroup).toBeDefined();
+      if (!actionGroup) return;
+
+      expect(actionGroup.items.map((i) => i.id)).toEqual(["paste", "select-all"]);
+      const pasteItem = actionGroup.items.find((i) => i.id === "paste");
+      expect(pasteItem?.disabled).toBe(false);
+
+      pasteItem?.onClick();
+      expect(onPaste).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("resolveContextMenuTarget", () => {

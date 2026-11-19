@@ -31,6 +31,7 @@ import { ExportModal, type ExportFormat } from "./ExportModal";
 import { KeyboardShortcutsModal } from "./KeyboardShortcutsModal";
 import { ContextMenu } from "./ContextMenu";
 import { useContextMenu } from "../use-context-menu";
+import { useStudioClipboard } from "../use-studio-clipboard";
 import { useBatchMutations } from "../use-batch-mutations";
 import { useDocumentMutations } from "../use-document-mutations";
 import { useGeometryMutations } from "../use-geometry-mutations";
@@ -270,9 +271,21 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
     commit,
     render,
   });
+  const clipboard = useStudioClipboard({
+    getDoc,
+    getEditor: () => editorRef.current,
+    commit,
+    render,
+    setSelectedShapeId,
+    onNotify: (text) => toast.push({ type: "info", text }),
+  });
   const contextMenu = useContextMenu({
     getEditor: () => editorRef.current,
     doc,
+    onCut: clipboard.handleCut,
+    onCopy: clipboard.handleCopy,
+    onPaste: clipboard.handlePaste,
+    canPaste: clipboard.canPaste,
     onDuplicate: toolbarActions.handleDuplicate,
     onDelete: batchMutations.handleBatchDelete,
     onNotify: (text) => toast.push({ type: "info", text }),

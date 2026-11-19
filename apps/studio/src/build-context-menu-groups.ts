@@ -43,6 +43,10 @@ export interface ContextMenuOptions {
   readonly onBringForward?: (() => void) | undefined;
   readonly onSendBackward?: (() => void) | undefined;
   readonly onSendToBack?: (() => void) | undefined;
+  readonly onCut?: (() => void) | undefined;
+  readonly onCopy?: (() => void) | undefined;
+  readonly onPaste?: (() => void) | undefined;
+  readonly canPaste?: boolean | undefined;
   readonly onDuplicate?: (() => void) | undefined;
   readonly onDelete?: (() => void) | undefined;
   readonly onCopyId?: (() => void) | undefined;
@@ -65,17 +69,26 @@ export function buildContextMenuGroups(options: ContextMenuOptions): readonly Co
   const groups: ContextMenuGroup[] = [];
 
   if (options.isBackground) {
-    if (options.onSelectAll) {
-      groups.push({
-        items: [
-          {
-            id: "select-all",
-            label: "Select All",
-            shortcut: `${mod}+A`,
-            onClick: options.onSelectAll,
-          },
-        ],
+    const actionItems = [];
+    if (options.onPaste) {
+      actionItems.push({
+        id: "paste",
+        label: "Paste",
+        shortcut: `${mod}+V`,
+        disabled: options.canPaste !== undefined ? !options.canPaste : false,
+        onClick: options.onPaste,
       });
+    }
+    if (options.onSelectAll) {
+      actionItems.push({
+        id: "select-all",
+        label: "Select All",
+        shortcut: `${mod}+A`,
+        onClick: options.onSelectAll,
+      });
+    }
+    if (actionItems.length > 0) {
+      groups.push({ items: actionItems });
     }
 
     const navItems = [];
@@ -155,6 +168,31 @@ export function buildContextMenuGroups(options: ContextMenuOptions): readonly Co
   }
 
   const editItems = [];
+  if (options.onCut) {
+    editItems.push({
+      id: "cut",
+      label: "Cut",
+      shortcut: `${mod}+X`,
+      onClick: options.onCut,
+    });
+  }
+  if (options.onCopy) {
+    editItems.push({
+      id: "copy",
+      label: "Copy",
+      shortcut: `${mod}+C`,
+      onClick: options.onCopy,
+    });
+  }
+  if (options.onPaste) {
+    editItems.push({
+      id: "paste",
+      label: "Paste",
+      shortcut: `${mod}+V`,
+      disabled: options.canPaste !== undefined ? !options.canPaste : false,
+      onClick: options.onPaste,
+    });
+  }
   if (options.onDuplicate) {
     editItems.push({
       id: "duplicate",
