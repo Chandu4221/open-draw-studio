@@ -4,7 +4,7 @@
 import type { Document, Shape, ShapeId } from "@open-draw/canvas";
 import { isRootId } from "@open-draw/canvas";
 import type { DesignStyleId, PlatformId, StyleId, ThemePalette } from "@open-draw/profiles";
-import { STYLE_PROFILES } from "@open-draw/profiles";
+import { STYLE_PROFILE_BY_VALUE, STYLE_PROFILES } from "@open-draw/profiles";
 import { ROOT_ROLES, type RootRole } from "./root-roles";
 import {
   PLUGIN_DARK_MODE,
@@ -66,10 +66,11 @@ export function resolveRootPlatform(doc: Document, shapeId: ShapeId): PlatformId
  */
 export function resolveRootStyle(doc: Document, shapeId: ShapeId): StyleId {
   const root = resolveRootShape(doc, shapeId);
-  const style =
-    (root?.meta.pluginData?.[PLUGIN_ROOT_STYLE] as StyleId | undefined) ??
-    (root?.meta.style as StyleId | undefined);
-  return style ?? STYLE_PROFILES.minimal;
+  const raw =
+    (root?.meta.pluginData?.[PLUGIN_ROOT_STYLE] as string | undefined) ??
+    (root?.meta.style as string | undefined);
+  if (!raw) return STYLE_PROFILES.minimal;
+  return STYLE_PROFILE_BY_VALUE[raw] ?? STYLE_PROFILES.minimal;
 }
 
 /**

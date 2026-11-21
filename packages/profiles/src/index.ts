@@ -7,6 +7,7 @@ import { FLUTTER_PROFILE } from "./platforms/flutter";
 import { IOS_PROFILE } from "./platforms/ios";
 import { WEB_PROFILE } from "./platforms/web";
 import { MINIMAL_STYLE_PROFILE } from "./styles/minimal";
+import { HAND_DRAWN_STYLE_PROFILE } from "./styles/hand-drawn";
 import { CRAYON_STYLE_PROFILE } from "./styles/crayon";
 
 export * from "./platforms";
@@ -20,6 +21,7 @@ export * from "./platforms/android-native";
 export * from "./platforms/flutter";
 export * from "./platforms/ios";
 export * from "./styles/minimal";
+export * from "./styles/hand-drawn";
 export * from "./styles/crayon";
 
 export const PLATFORM_PROFILES: Readonly<Record<PlatformId | "android-native", PlatformProfile>> =
@@ -33,6 +35,7 @@ export const PLATFORM_PROFILES: Readonly<Record<PlatformId | "android-native", P
 
 export const STYLE_PROFILES_REGISTRY: Readonly<Record<StyleId, StyleProfile>> = Object.freeze({
   minimal: MINIMAL_STYLE_PROFILE,
+  handDrawn: HAND_DRAWN_STYLE_PROFILE,
   crayon: CRAYON_STYLE_PROFILE,
 });
 

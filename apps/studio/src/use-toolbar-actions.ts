@@ -116,6 +116,7 @@ export function useToolbarActions(props: UseToolbarActionsProps) {
     const editor = editorRef.current;
     if (editor && editor.undo()) {
       toast.push({ type: "info", text: "Undo performed" });
+      render();
     }
   }
 
@@ -123,6 +124,7 @@ export function useToolbarActions(props: UseToolbarActionsProps) {
     const editor = editorRef.current;
     if (editor && editor.redo()) {
       toast.push({ type: "info", text: "Redo performed" });
+      render();
     }
   }
 
