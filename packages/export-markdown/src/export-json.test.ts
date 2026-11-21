@@ -11,7 +11,12 @@ import {
   parseDocument,
   FILL_STYLES,
 } from "@open-draw/canvas";
-import { getShapeSemantic, SEMANTICS_REGISTRY_VERSION } from "@open-draw/semantics";
+import {
+  getShapeSemantic,
+  parseSemanticId,
+  ROOT_ROLES,
+  SEMANTICS_REGISTRY_VERSION,
+} from "@open-draw/semantics";
 import { formatChipId, isChipId, parseChipId } from "./chip-id";
 import { DocumentError, exportJson, roundCoordinate } from "./export-json";
 
@@ -328,5 +333,33 @@ describe("exportJson parity (Milestone 11A Work Package A)", () => {
     ]);
 
     expect(() => exportJson(doc)).toThrow(DocumentError);
+  });
+
+  it("exports top-level scope 'component' and isolated component directive when root role is component", () => {
+    const card = createRect(
+      parseShapeId("card-root"),
+      { x: 0, y: 0, width: 400, height: 300 },
+      {
+        label: "Profile Card",
+        meta: {
+          platform: PLATFORMS.web,
+          role: ROOT_ROLES.component,
+          order: {},
+          semantic: {
+            id: parseSemanticId("card"),
+            platform: PLATFORMS.web,
+          },
+        },
+      },
+    );
+    const doc = createDocument([card]);
+    const parsed = JSON.parse(exportJson(doc, { includeAiDirectives: true }));
+
+    expect(parsed.scope).toBe("component");
+    expect(
+      parsed.aiGuidance.directives.some((d: string) =>
+        d.includes("- **Component Scope (Isolated Component)**:"),
+      ),
+    ).toBe(true);
   });
 });

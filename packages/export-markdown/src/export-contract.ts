@@ -48,7 +48,7 @@ export const CREATIVITY_LEVEL_DEFINITIONS: Readonly<
     name: "Strict",
     description: "Replicate wireframe components and structure with zero deviations.",
     promptDirective:
-      "Follow the wireframe structure, component hierarchy, and specified properties exactly. Do not add, omit, or modify any elements. Treat the layout as an absolute requirement with zero deviations.",
+      "Follow the wireframe structure, component hierarchy, and specified properties exactly. Do not add, omit, or modify any elements. Treat the layout as an absolute requirement with zero deviations. Do not invent external wrappers, extra panels, or surrounding application chrome.",
   },
   2: {
     level: 2,
@@ -56,7 +56,7 @@ export const CREATIVITY_LEVEL_DEFINITIONS: Readonly<
     description:
       "Follow wireframe hierarchy strictly; apply standard spacing and component styling.",
     promptDirective:
-      "Follow the wireframe component hierarchy strictly. You may apply standard design system spacing, alignment, and semantic color tokens, but do not add new components or change the intended flow.",
+      "Follow the wireframe component hierarchy strictly. You may apply standard design system spacing, alignment, and semantic color tokens, but do not add new components, change the intended flow, or invent surrounding application dashboards.",
   },
   3: {
     level: 3,
@@ -64,7 +64,7 @@ export const CREATIVITY_LEVEL_DEFINITIONS: Readonly<
     description:
       "Standard UX best practices; flesh out standard states (hover, loading, empty states).",
     promptDirective:
-      "Interpret the wireframe using standard UX best practices. Preserve all core components and structure while implementing essential missing states (e.g. hover states, loading skeletons, error indicators, empty states).",
+      "Interpret the wireframe using standard UX best practices. Preserve all core components and structure while implementing essential missing states (e.g. hover states, loading skeletons, error indicators, empty states). Do not add unrelated screens, surrounding application dashboards, or extra features outside the specified wireframe bounds.",
   },
   4: {
     level: 4,

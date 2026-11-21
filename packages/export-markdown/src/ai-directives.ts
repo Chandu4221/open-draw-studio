@@ -7,9 +7,11 @@ import { type CreativityLevel, CREATIVITY_LEVEL_DEFINITIONS } from "./export-con
 import {
   type ThemePalette,
   PLATFORMS,
+  ROOT_ROLES,
   THEME_PALETTE_SLOTS,
   resolveRootDarkMode,
   resolveRootPlatform,
+  resolveRootRole,
   resolveRootTheme,
 } from "@open-draw/semantics";
 import { escapeCodeSpan, escapeMarkdownText } from "./escape-markdown";
@@ -84,6 +86,13 @@ function formatTokensForIos(theme: ThemePalette): string[] {
 export function compileAiDirectives(doc: Document, options?: MarkdownExportOptions): string[] {
   const lines: string[] = [];
 
+  const rootShapes: Shape[] = Object.values(doc.shapes).filter((s) => isRootId(s.parentId));
+  const scopedRoot =
+    options?.rootId !== undefined && options.rootId !== ROOT_ID
+      ? doc.shapes[options.rootId]
+      : undefined;
+  const activeRoots = scopedRoot !== undefined ? [scopedRoot] : rootShapes;
+
   // 1. Creativity Level
   if (options?.creativityLevel !== undefined) {
     const def = CREATIVITY_LEVEL_DEFINITIONS[options.creativityLevel as CreativityLevel];
@@ -93,7 +102,29 @@ export function compileAiDirectives(doc: Document, options?: MarkdownExportOptio
     }
   }
 
-  // 2. A11y & Contrast Directives (Idea 3)
+  // 2. Component Scope vs Screen Scope
+  const isComponentScope =
+    activeRoots.length > 0 &&
+    activeRoots.every((r) => resolveRootRole(doc, r.id) === ROOT_ROLES.component);
+
+  if (isComponentScope) {
+    const componentName = activeRoots[0]?.label || "Component";
+    lines.push("- **Component Scope (Isolated Component)**:");
+    lines.push(
+      `  - This wireframe defines an isolated component (${escapeMarkdownText(componentName)}). Render ONLY this component in isolation on a clean, neutral background.`,
+    );
+    lines.push(
+      "  - STRICTLY FORBIDDEN: Do not invent surrounding application shells, full-page dashboards, sidebars, navigation bars, or fictitious application chrome.",
+    );
+  } else if (activeRoots.length > 0) {
+    const screenName = activeRoots[0]?.label || "Screen";
+    lines.push("- **Screen Scope (Full Page / Screen)**:");
+    lines.push(
+      `  - This wireframe defines a complete platform screen (${escapeMarkdownText(screenName)}). Implement the screen layout according to the hierarchy and structure provided.`,
+    );
+  }
+
+  // 3. A11y & Contrast Directives (Idea 3)
   lines.push("- **Accessibility & Contrast (WCAG 2.1 AA)**:");
   lines.push(
     "  - Maintain minimum 4.5:1 text-to-background contrast ratio (3:1 for large text). Validate palette pairings via tools like colorcontrast.cc.",
@@ -105,7 +136,7 @@ export function compileAiDirectives(doc: Document, options?: MarkdownExportOptio
     "  - Provide semantic ARIA landmarks (header, nav, main, aside, footer) and descriptive labels on all interactive controls.",
   );
 
-  // 3. Smart Semantics Context & Slot Inference
+  // 4. Smart Semantics Context & Slot Inference
   lines.push("- **Semantic Context & Slot Inference (Smart Semantics)**:");
   lines.push(
     "  - Child elements inherit semantic roles from their tagged parent container. For example, text and icons nested within a navigation bar, tab row, or app bar represent navigation items; children inside a card, list item, or dialog represent header, media, body, and actions in document order.",
@@ -117,13 +148,7 @@ export function compileAiDirectives(doc: Document, options?: MarkdownExportOptio
     "  - Do not render untagged child shapes as raw unstyled containers — map them directly into the parent component's idiomatic slots and sub-elements.",
   );
 
-  // 3. Dark Mode & Switcher Directive (Idea 4)
-  const rootShapes: Shape[] = Object.values(doc.shapes).filter((s) => isRootId(s.parentId));
-  const scopedRoot =
-    options?.rootId !== undefined && options.rootId !== ROOT_ID
-      ? doc.shapes[options.rootId]
-      : undefined;
-
+  // 5. Dark Mode & Switcher Directive (Idea 4)
   const hasDarkMode =
     scopedRoot !== undefined
       ? resolveRootDarkMode(doc, scopedRoot.id)
@@ -141,7 +166,6 @@ export function compileAiDirectives(doc: Document, options?: MarkdownExportOptio
   }
 
   // 4. Root Container Theme Tokens (Idea 6)
-  const activeRoots = scopedRoot !== undefined ? [scopedRoot] : rootShapes;
   for (const root of activeRoots) {
     const theme = resolveRootTheme(doc, root.id);
     if (theme !== undefined) {

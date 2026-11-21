@@ -14,6 +14,7 @@ import {
   getShapeSemantic,
   DESIGN_STYLES,
   PLATFORMS,
+  ROOT_ROLES,
   STYLE_PROFILES,
 } from "@open-draw/semantics";
 
@@ -535,5 +536,50 @@ describe("exportMarkdown", () => {
       "Child elements inherit semantic roles from their tagged parent container",
     );
     expect(md).toContain("Elements nested inside an image or video frame");
+  });
+
+  it("exports isolated component scope directive when root role is component", () => {
+    const card = createRect(
+      parseShapeId("card-1"),
+      { x: 0, y: 0, width: 400, height: 300 },
+      {
+        label: "Product Card",
+        meta: {
+          platform: PLATFORMS.web,
+          role: ROOT_ROLES.component,
+          order: {},
+          semantic: {
+            id: parseSemanticId("card"),
+            platform: PLATFORMS.web,
+          },
+        },
+      },
+    );
+    const doc = createDocument([card]);
+    const md = exportMarkdown(doc, { includeAiDirectives: true });
+
+    expect(md).toContain("- **Component Scope (Isolated Component)**:");
+    expect(md).toContain("Render ONLY this component in isolation on a clean, neutral background");
+    expect(md).toContain("STRICTLY FORBIDDEN: Do not invent surrounding application shells");
+  });
+
+  it("exports full screen scope directive when root role is screen or default", () => {
+    const screen = createPage(
+      parseShapeId("screen-1"),
+      { x: 0, y: 0, width: 1440, height: 900 },
+      {
+        label: "Home Page",
+        meta: {
+          platform: PLATFORMS.web,
+          role: ROOT_ROLES.screen,
+          order: {},
+        },
+      },
+    );
+    const doc = createDocument([screen]);
+    const md = exportMarkdown(doc, { includeAiDirectives: true });
+
+    expect(md).toContain("- **Screen Scope (Full Page / Screen)**:");
+    expect(md).toContain("This wireframe defines a complete platform screen");
   });
 });
