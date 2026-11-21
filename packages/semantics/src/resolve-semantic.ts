@@ -108,7 +108,10 @@ export function isContainerSemantic(
     tag.id === "card" ||
     tag.id.endsWith("-card") ||
     tag.id === "form" ||
-    tag.id === "table"
+    tag.id === "table" ||
+    tag.id === "image" ||
+    tag.id === "video" ||
+    tag.id === "carousel"
   );
 }
 

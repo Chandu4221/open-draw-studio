@@ -568,4 +568,68 @@ describe("StudioShell editor event synchronization", () => {
     // In Platform Agnostic mode, nesting into nestedRect is bypassed; parents to rootContainer
     expect(newShape?.parentId).toBe(rootContainer.id);
   });
+
+  it("parents shapes drawn over an image media frame to the image as overlays", () => {
+    const rootWeb = createRect(
+      parseShapeId("root-web"),
+      { x: 0, y: 0, width: 1440, height: 900 },
+      {
+        parentId: ROOT_ID,
+        meta: {
+          order: {},
+          pluginData: { [PLUGIN_ROOT_PLATFORM]: "web" },
+        },
+      },
+    );
+
+    const card = createRect(
+      parseShapeId("card-container"),
+      { x: 50, y: 50, width: 400, height: 500 },
+      {
+        parentId: rootWeb.id,
+        meta: {
+          order: {},
+          pluginData: { [PLUGIN_SEMANTICS]: { platform: "web", id: "card" } },
+        },
+      },
+    );
+
+    const image = createRect(
+      parseShapeId("card-media-image"),
+      { x: 10, y: 10, width: 380, height: 250 },
+      {
+        parentId: card.id,
+        meta: {
+          order: {},
+          pluginData: { [PLUGIN_SEMANTICS]: { platform: "web", id: "image" } },
+        },
+      },
+    );
+
+    const initialDoc = normalizeStudioDocument(createDocument([rootWeb, card, image]));
+    expect(initialDoc.shapes[image.id]?.meta.isContainer).toBe(true);
+
+    editor = createEditor(container as unknown as HTMLElement, {
+      document: initialDoc,
+      nestingMode: "containers-only",
+    });
+
+    const mockSvg = editor.svg as unknown as MockDomNode;
+
+    // Draw bookmark/action button inside image bounds: (100, 80) to (150, 120)
+    editor.setTool(TOOLS.drawRect);
+    dispatchPointer(mockSvg, "pointerdown", { x: 100, y: 80 }, 0);
+    dispatchPointer(mockSvg, "pointermove", { x: 150, y: 120 });
+    dispatchPointer(mockSvg, "pointerup", { x: 150, y: 120 });
+
+    const doc = editor.getDocument();
+    const shapes = Object.values(doc.shapes);
+    const overlayButton = shapes.find(
+      (s) => s.id !== rootWeb.id && s.id !== card.id && s.id !== image.id,
+    );
+
+    expect(overlayButton).toBeDefined();
+    // The button drawn over the image must be parented to the image, not the card!
+    expect(overlayButton?.parentId).toBe(image.id);
+  });
 });

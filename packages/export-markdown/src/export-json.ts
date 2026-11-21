@@ -19,6 +19,7 @@ import {
   buildChildIndex,
   getShapeHiddenOn,
   getShapeSemantic,
+  resolveRootRole,
   sortSiblingShapes,
   PLUGIN_DARK_MODE,
   PLUGIN_ROOT_PLATFORM,
@@ -56,6 +57,7 @@ export interface ExportedJsonDocument {
   readonly semantics: {
     readonly version: number;
   };
+  readonly scope: RootRole;
   readonly shapeOrder: readonly ShapeId[];
   readonly aiGuidance?: {
     readonly directives: readonly string[];
@@ -285,6 +287,17 @@ export function exportJson(doc: Document, options?: JsonExportOptions): string {
     shapesOutput[shape.id] = shapeRecord;
   }
 
+  const rootShapes: Shape[] = Object.values(doc.shapes).filter((s) => isRootId(s.parentId));
+  const scopedRoot =
+    options?.rootId !== undefined && options.rootId !== ROOT_ID
+      ? doc.shapes[options.rootId]
+      : undefined;
+  const activeRoots = scopedRoot !== undefined ? [scopedRoot] : rootShapes;
+
+  const isComponentScope =
+    activeRoots.length > 0 &&
+    activeRoots.every((r) => resolveRootRole(doc, r.id) === ROOT_ROLES.component);
+
   const output: Record<string, unknown> = {
     schema: {
       version: doc.schema.version,
@@ -292,6 +305,7 @@ export function exportJson(doc: Document, options?: JsonExportOptions): string {
     semantics: {
       version: SEMANTICS_REGISTRY_VERSION,
     },
+    scope: isComponentScope ? ROOT_ROLES.component : ROOT_ROLES.screen,
     shapeOrder,
   };
 
