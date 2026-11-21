@@ -12,7 +12,7 @@ import {
 } from "@open-draw/canvas";
 import { EXPORT_CHIP_PREFIX } from "@open-draw/export-markdown";
 import { getShapeSemantic } from "@open-draw/semantics";
-import { createStudioCustomRenderers } from "./renderers/wireframe-renderers";
+import { createStudioCustomRenderers } from "./renderers/studio-custom-renderers";
 
 export interface LegendItem {
   readonly label: string;
@@ -94,7 +94,7 @@ export function documentToSvgWithLegend(document: Document, options?: ExportSvgO
   const innerSvg = documentToSvg(document, {
     visibleShapeIds: options?.visibleShapeIds,
     includeAnnotations,
-    customRenderers: createStudioCustomRenderers(),
+    customRenderers: createStudioCustomRenderers(() => document),
   });
 
   let annotationChipsSvg = "";

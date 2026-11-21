@@ -3,7 +3,6 @@ import {
   CORNER_RADII,
   TYPOGRAPHY_VARIANTS,
   computeAutoContrastText,
-  createStudioCustomRenderers,
   generateRoundedRectPath,
   PLUGIN_BORDER_RADIUS,
   renderPolishedRect,
@@ -12,6 +11,7 @@ import {
   resolveShapeTypography,
   resolveWireframeFill,
 } from "./wireframe-renderers";
+import { createStudioCustomRenderers } from "./studio-custom-renderers";
 import {
   type BoundingBox,
   FILL_STYLES,

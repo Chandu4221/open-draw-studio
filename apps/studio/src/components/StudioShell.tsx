@@ -20,7 +20,10 @@ import { useToast } from "@open-draw/ui";
 import { computeSemanticChipOverlays } from "../canvas-overlays";
 import { useCanvasHover } from "../use-canvas-hover";
 import { useRootChipVisibility } from "../use-root-chip-visibility";
-import { createStudioCustomRenderers } from "../renderers/wireframe-renderers";
+import {
+  createStudioCustomRenderers,
+  refreshDocumentScene,
+} from "../renderers/studio-custom-renderers";
 import { StudioLayout } from "../templates/StudioLayout";
 import { Sidebar } from "./Sidebar";
 import { CanvasBrand } from "./CanvasBrand";
@@ -122,7 +125,9 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
       document: initialDoc,
       tool: TOOLS.select,
       nestingMode: "containers-only",
-      customRenderers: createStudioCustomRenderers(),
+      customRenderers: createStudioCustomRenderers(
+        () => editorRef.current?.getDocument() ?? initialDoc,
+      ),
       canvasOptions: {},
       onFallback: (msg) => toastRef.current.push({ type: "info", text: msg }),
       renderCustomOverlays: (ctx) =>
@@ -217,7 +222,7 @@ export function StudioShell({ onBackToLanding }: StudioShellProps): React.JSX.El
   };
 
   const render = useCallback((): void => {
-    editorRef.current?.render();
+    refreshDocumentScene(editorRef.current);
   }, []);
   const commit = useCallback((cmds: readonly Command[], opts?: { record?: boolean }): void => {
     editorRef.current?.execute(cmds, opts);

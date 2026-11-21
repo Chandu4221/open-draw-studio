@@ -182,7 +182,8 @@ export function ContainerInspector(props: ContainerInspectorProps): React.JSX.El
             onChange={(e) => handleSetStyle(e.target.value as StyleId)}
           >
             <option value={STYLE_PROFILES.minimal}>Minimal Wireframe</option>
-            <option value={STYLE_PROFILES.crayon}>Crayon / Hand-drawn</option>
+            <option value={STYLE_PROFILES.handDrawn}>Hand-drawn (Marker Wireframe)</option>
+            <option value={STYLE_PROFILES.crayon}>Crayon (Wax Texture)</option>
           </select>
         </OdField>
 

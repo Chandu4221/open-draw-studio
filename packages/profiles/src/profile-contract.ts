@@ -11,14 +11,18 @@ export type { SemanticDefinition } from "./semantic-contract";
  */
 export const STYLE_PROFILES = {
   minimal: "minimal",
+  handDrawn: "handDrawn",
   crayon: "crayon",
 } as const;
 
 export type StyleId = keyof typeof STYLE_PROFILES;
 
-export const STYLE_PROFILE_BY_VALUE: Readonly<Record<string, StyleId>> = Object.fromEntries(
-  (Object.keys(STYLE_PROFILES) as StyleId[]).map((style) => [STYLE_PROFILES[style], style]),
-);
+export const STYLE_PROFILE_BY_VALUE: Readonly<Record<string, StyleId>> = Object.freeze({
+  minimal: "minimal",
+  crayon: "crayon",
+  handDrawn: "handDrawn",
+  "hand-drawn": "handDrawn",
+});
 
 /**
  * Platform profile contract. Platform profiles are data modules;

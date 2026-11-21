@@ -1,5 +1,5 @@
-import type { BoundingBox, PluginId, Shape, ShapeSvgRenderer } from "@open-draw/canvas";
-import { FILL_STYLES, parsePluginId, SHAPE_KINDS } from "@open-draw/canvas";
+import type { BoundingBox, PluginId, Shape } from "@open-draw/canvas";
+import { FILL_STYLES, parsePluginId } from "@open-draw/canvas";
 import { buildScopedTextStyle, WIREFRAME_PALETTE } from "./wireframe-typography";
 
 export {
@@ -255,14 +255,4 @@ export function renderPolishedText(shape: Shape, box: BoundingBox): string {
     return `${styleTag}${renderRectSvg(box, radii, fill, shape.stroke, num(shape.strokeWidth, 1), fillOpacity, defs)}`;
   }
   return styleTag;
-}
-
-/**
- * Creates the Studio custom renderers map for documentToSvg and createEditor.
- */
-export function createStudioCustomRenderers(): Readonly<Record<string, ShapeSvgRenderer>> {
-  return Object.freeze({
-    [SHAPE_KINDS.rect]: (shape: Shape, box: BoundingBox) => renderPolishedRect(shape, box),
-    [SHAPE_KINDS.text]: (shape: Shape, box: BoundingBox) => renderPolishedText(shape, box),
-  });
 }
