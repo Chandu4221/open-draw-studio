@@ -251,4 +251,50 @@ describe("normalizeStudioDocument", () => {
     expect(normalized.shapes[rootLine.id]?.meta.isContainer).toBeUndefined();
     expect(normalized.shapes[rootText.id]?.meta.isContainer).toBeUndefined();
   });
+
+  it("marks image media frame shapes inside an active platform as isContainer: true to support overlay parenting", () => {
+    const rootWeb = createRect(
+      parseShapeId("root-web"),
+      { x: 0, y: 0, width: 1440, height: 900 },
+      {
+        parentId: ROOT_ID,
+        meta: {
+          order: {},
+          pluginData: { [PLUGIN_ROOT_PLATFORM]: "web" },
+        },
+      },
+    );
+    const card = createRect(
+      parseShapeId("product-card"),
+      { x: 40, y: 100, width: 300, height: 400 },
+      {
+        parentId: rootWeb.id,
+        meta: {
+          order: {},
+          pluginData: {
+            [PLUGIN_SEMANTICS]: { platform: "web", id: "card" },
+          },
+        },
+      },
+    );
+    const image = createRect(
+      parseShapeId("product-image"),
+      { x: 40, y: 100, width: 300, height: 200 },
+      {
+        parentId: card.id,
+        meta: {
+          order: {},
+          pluginData: {
+            [PLUGIN_SEMANTICS]: { platform: "web", id: "image" },
+          },
+        },
+      },
+    );
+    const doc = createDocument([rootWeb, card, image]);
+    const normalized = normalizeStudioDocument(doc);
+
+    expect(normalized.shapes[rootWeb.id]?.meta.isContainer).toBe(true);
+    expect(normalized.shapes[card.id]?.meta.isContainer).toBe(true);
+    expect(normalized.shapes[image.id]?.meta.isContainer).toBe(true);
+  });
 });

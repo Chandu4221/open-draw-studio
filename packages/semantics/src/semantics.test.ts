@@ -884,6 +884,27 @@ describe("pluginData metadata resolution (canvas 0.9.2 plugin architecture)", ()
       expect(isLeafComponentSemantic({ id: "button" }, FLUTTER_PROFILE)).toBe(true);
     });
 
+    it("identifies media frame semantics (image, video, carousel) as container-capable across platforms", () => {
+      // Web
+      expect(isContainerSemantic({ id: "image" }, WEB_PROFILE)).toBe(true);
+      expect(isContainerSemantic({ id: "video" }, WEB_PROFILE)).toBe(true);
+      expect(isContainerSemantic({ id: "carousel" }, WEB_PROFILE)).toBe(true);
+      expect(isLeafComponentSemantic({ id: "image" }, WEB_PROFILE)).toBe(false);
+
+      // iOS
+      expect(isContainerSemantic({ id: "image" }, IOS_PROFILE)).toBe(true);
+      expect(isLeafComponentSemantic({ id: "image" }, IOS_PROFILE)).toBe(false);
+
+      // Android
+      expect(isContainerSemantic({ id: "image" }, ANDROID_NATIVE_PROFILE)).toBe(true);
+      expect(isContainerSemantic({ id: "carousel" }, ANDROID_NATIVE_PROFILE)).toBe(true);
+      expect(isLeafComponentSemantic({ id: "image" }, ANDROID_NATIVE_PROFILE)).toBe(false);
+
+      // Flutter
+      expect(isContainerSemantic({ id: "image" }, FLUTTER_PROFILE)).toBe(true);
+      expect(isLeafComponentSemantic({ id: "image" }, FLUTTER_PROFILE)).toBe(false);
+    });
+
     it("safely handles null or malformed semantic tags without throwing (null reading id guard)", () => {
       // getShapeSemantic returns undefined for null
       const shapeWithNullSemantic = createRect(

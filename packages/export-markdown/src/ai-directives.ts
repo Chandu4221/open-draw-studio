@@ -111,6 +111,9 @@ export function compileAiDirectives(doc: Document, options?: MarkdownExportOptio
     "  - Child elements inherit semantic roles from their tagged parent container. For example, text and icons nested within a navigation bar, tab row, or app bar represent navigation items; children inside a card, list item, or dialog represent header, media, body, and actions in document order.",
   );
   lines.push(
+    "  - Elements nested inside an image or video frame (e.g. action buttons, badges, chips, or text) represent visual media overlays (e.g. bookmark icon, play button, tag, scrim). Render the media container with relative positioning and the child overlay elements with absolute/overlay positioning.",
+  );
+  lines.push(
     "  - Do not render untagged child shapes as raw unstyled containers — map them directly into the parent component's idiomatic slots and sub-elements.",
   );
 

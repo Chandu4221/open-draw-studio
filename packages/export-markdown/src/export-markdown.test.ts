@@ -534,5 +534,6 @@ describe("exportMarkdown", () => {
     expect(md).toContain(
       "Child elements inherit semantic roles from their tagged parent container",
     );
+    expect(md).toContain("Elements nested inside an image or video frame");
   });
 });
